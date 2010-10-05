@@ -1,35 +1,36 @@
 package com.philipcali.cct
 package course
 
-class Module(id: Int, name: String, from: String)
+class Module(val id: Int, val name: String, val from: String)
+trait Resource extends Module
 
-// Online Course Module
-case class Label(id: Int, name: String, from: String) extends Module(id, name, from)
-case class ExternalLink(id: Int, name: String, from: String, url: String) extends Module(id, name, from)
-case class OnlineDocument(id: Int, name: String, from: String, text: String) extends Module(id, name, from)
-case class SingleFile(id: Int, name: String, from: String, file: File) extends Module(id, name, from)
-case class Directory(id: Int, name: String, from: String, directory: List[File]) extends Module(id, name, from)
+// Online Cou`rse Module
+class Label(id: Int, name: String, from: String) extends Module(id, name, from)
+class ExternalLink(id: Int, name: String, from: String, val url: String) extends Module(id, name, from) with Resource
+class OnlineDocument(id: Int, name: String, from: String, val text: String) extends Module(id, name, from) with Resource
+class SingleFile(id: Int, name: String, from: String, val file: File) extends Module(id, name, from) with Resource
+class Directory(id: Int, name: String, from: String, val directory: List[File]) extends Module(id, name, from) with Resource
 case class File(name: String, linkname: String, size: Long)
 
 // Discussion / Anouncement
-case class Announcement(id: Int, name: String, from: String, shorttext: String) extends Module(id, name, from)
+class Announcement(id: Int, name: String, from: String, val shorttext: String) extends Module(id, name, from)
 
 // Forums
-case class Forum(id: Int, name: String, from: String, shorttext: String) extends Module(id, name, from)
+class Forum(id: Int, name: String, from: String, val shorttext: String) extends Module(id, name, from)
 
 // Staff Information
-case class StaffInformation(id: Int, name: String, from: String, contact: Contact) extends Module(id, name, from)
+class StaffInformation(id: Int, name: String, from: String, val contact: Contact) extends Module(id, name, from)
 case class Contact(title: String, given: String, family: String, 
                    email: String, phone: String, office: String, image: String)
 
 
 // Quiz / Assignments
-case class Quiz(id: Int, name: String, from: String, description: String) extends Module(id, name, from)
+class Quiz(id: Int, name: String, from: String, val description: String) extends Module(id, name, from)
 
 // Question / Question types
-case class QuestionCategory(id: Int, name: String, from: String, info: String, questions: Seq[Question]) extends Module(id, name, from)
-abstract case class Question(id: Int, name: String, from: String,  
-                             text: String, grade: Double) extends Module(id, name, from) {
+class QuestionCategory(id: Int, name: String, from: String, val info: String, val questions: Seq[Question]) extends Module(id, name, from)
+abstract class Question(id: Int, name: String,  
+                        val text: String, val grade: Double) extends Module(id, name, "") {
   def answers: Seq[Answer]
 }
 
@@ -50,21 +51,37 @@ trait BooleanQuestion extends Question {
 trait Matching extends Question
 trait Ordering extends Question
 trait FillInBlank extends Question
-trait Numeric extends Question
+trait Numeric extends Question {
+  def tolerance = 0.0
+}
 
 case class Answer(id: Int, text: String="", weight: Double=0.0, feedback: String = "")
 
-case class Section(name: String) extends Module(0, name, "")
+class Section(name: String) extends Module(0, name, "")
 case class CourseHeader(title: String, description: String)
 case class CourseModule(wrapped: Module, level: Int, children: Seq[CourseModule])
 
 // The main Course
 class Course(val info: CourseHeader, val sections: Seq[CourseModule], val nondisplay: Seq[Module]) {
+  def traverseModule[A](d: Seq[CourseModule])(ret: CourseModule => A): Seq[A] = {
+    d flatMap { o =>
+      Seq(ret(o)) ++ traverseModule(o.children)(ret)
+    }
+  }
+
+  def mods(section: CourseModule) = {
+    traverseModule(section.children)(m => m)
+  } 
+ 
+  def details = {
+    traverseModule(sections)(m => m.wrapped)
+  }
+
   def printStructure {
     def printModule(d: Seq[CourseModule]) {
       d foreach { o =>
         val tab = (0 until o.level).foldLeft("")((in, str) => in + "\t")
-        println(tab + o.wrapped); printModule(o.children)
+        println(tab + o.wrapped.name + " " + o.wrapped.from); printModule(o.children)
       }
     }
     println("Title: " + info.title)
@@ -72,6 +89,6 @@ class Course(val info: CourseHeader, val sections: Seq[CourseModule], val nondis
     println("Modules in organization:")
     printModule(sections)
     println("Modules not in organization (Announcements/Question Categories):")
-    nondisplay.foreach(println)
+    nondisplay.foreach(o => println(o.name + " " + o.from))
   }
 }

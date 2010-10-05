@@ -28,8 +28,8 @@ class IMSManifest(val working: String) {
     }
   }
 
-  def withResources[A](filter: String)(handle: (Resource, Node) => A) = {
-    resources.filter(_.tpe.contains(filter)).map { r=>
+  def withResources[A](filter: Resource => Boolean)(handle: (Resource, Node) => A) = {
+    resources.filter(filter).map { r=>
       withDat(r.ident) { file =>
         handle(r, file)
       }
@@ -37,44 +37,58 @@ class IMSManifest(val working: String) {
   }
 
   def announcements = {
-    withResources("announcement") { (res, file) =>
+    withResources(_.tpe contains("announcement")) { (res, file) =>
       withIdName(file) { (id, name) => 
-        Announcement(id, name, res.ident, file \\ "TEXT" text)
+        new Announcement(id, name, res.ident, file \\ "TEXT" text)
       }
     } 
   }
 
   def categories = {
-    withResources("qti") { (res, file) => 
+    withResources(res => res.tpe.contains("qti") && !res.tpe.endsWith("attempt")) { (res, file) => 
       val id = (file \\ "assessment" \ "assessmentmetadata" \ "bbmd_asi_object_id" text).split("_")(1)
       val info = (file \\ "assessment" \ "presentation_material" \ "flow_mat" \ "material" \ "mat_extension" \ "mat_formattedtext" text)
 
-      QuestionCategory(id.toInt, res.title, res.ident, info, questions(file))
+      new QuestionCategory(id.toInt, res.title, res.ident, info, questions(file))
     }
   }
 
   def questions[A >: Question](file: Node): Seq[A] = {
     for(question <- file \\ "assessment" \ "section" \ "item") yield {
-      val id = (question \\ "bbmd_asi_object_id" text).split("_")(1)
-      val name = (question \ "presentation" \ "flow" \ "flow" \ "flow" \ "material" \ "mat_extension" \ "mat_formattedtext" text)
+
+      val builder = questionBuilder(question) _
 
       question \\ "bbmd_questiontype" text match {
-        case "Multiple Choice" => handleMultipleChoice(question, id.toInt, name) 
-        case "Multiple Answer" => handleMultipleChoice(question, id.toInt, name)
-        case "Opinion Scale" => handleMultipleChoice(question, id.toInt, name)
+        case "Multiple Choice" => builder(handleMultipleChoice) 
+        case "Multiple Answer" => builder(handleMultipleChoice)
+        case "Opinion Scale" => builder(handleMultipleChoice)
+        case "Essay" => builder(handleEssay) 
+        case "Short Response" => builder(handleEssay)
+        case "True/False" => builder(handleBoolean)
+        case "Either/Or" => builder(handleBoolean)
+        case "Matching" => builder(handleMatching)
+        case "Ordering" => builder(handleOrdering)
+        case "Fill in the Blank" => builder(handleFillInBlank)
+        case "Numeric" => builder(handleNumeric)
+        case _ => builder(handleEssay)
       }
     }
+  }
+
+  def questionBuilder[A >: Question](question: NodeSeq)(handler: (NodeSeq, Int, String, Double) => A)= {
+    val id = (question \\ "bbmd_asi_object_id" text).split("_")(1)
+    val name = (question \ "presentation" \ "flow" \ "flow" \ "flow" \ "material" \ "mat_extension" \ "mat_formattedtext" text)
+    val grade = (question \ "itemmetadata" \ "qmd_absolutescore_max" text).toDouble
+  
+    handler(question, id.toInt, name, if(grade == 0) 1 else grade)
   }
 
   def feedback(question: NodeSeq, index: Int) = (question \ "itemfeedback")(index) \ "flow_mat" \ "flow_mat" \ "material" \ "mat_extension" \ "mat_formattedtext" text
 
   def value(question: NodeSeq, of: String) = (question \ "resprocessing" \ "outcomes" \ "decvar")(0) \ of text
-
-  def grade(question: NodeSeq) = (question \ "itemmetadata" \ "qmd_absolutescore_max" text).toDouble
   
-  def handleMultipleChoice(question: NodeSeq, id: Int, name: String) = {
-    new Question(id, name, "", name, 
-                 if(grade(question) == 0) 1 else grade(question)) with MultipleChoice {
+  def handleMultipleChoice(question: NodeSeq, id: Int, name: String, grade: Double) = {
+    new Question(id, name, name, grade) with MultipleChoice {
       override def correctFeedback = feedback(question, 0)
       override def incorrectFeedback = feedback(question, 1) 
       def answers  =  {
@@ -86,15 +100,92 @@ class IMSManifest(val working: String) {
             case Some(node) => value(question, "@maxvalue")
             case None => value(question, "@minvalue")
           }
-          Answer(index, text, weight.toDouble)
+          Answer(index, text, if(weight == "") 0 else weight.toDouble)
         }
+      }
+    }
+  }
+
+  def handleEssay(question: NodeSeq, id: Int, name: String, grade: Double) = {
+    new Question(id, name, name, grade) with Essay
+  }
+
+  def handleBoolean(question: NodeSeq, id: Int, name: String, grade: Double) = {
+    new Question(id, name, name, grade) with BooleanQuestion {
+      def answers = {
+        def defineAnswer(desc: String) = {
+          ((question \ "resprocessing" \ "respcondition")(0) 
+            \ "conditionvar" \ "varequal").find(_.text.equalsIgnoreCase(desc)) match {
+            case Some(node) => Answer(0, desc, 1, feedback(question, 0))
+            case None => Answer(0, desc, 0, feedback(question, 1))
+          }
+        }
+        List("True", "False") map(defineAnswer) 
+      }
+    }
+  }
+
+  def handleMatching(question: NodeSeq, id: Int, name: String, grade: Double) = {
+    new Question(id, name, name, grade) with Matching {
+      def answers = {
+        for((answer, index) <- (question \ "presentation" \ "flow" \ "flow")(1) \ "flow" zipWithIndex) 
+        yield {
+          val text = (answer \ "material" \ "mat_extension" \ "mat_formattedtext" text)
+          val anstext = (((question \ "presentation" \ "flow")(2) \ "flow")(index+1) \ "flow" \ "material" \ "mat_extension" \ "mat_formattedtext" text)
+          Answer(index, text, 1, anstext)
+        }
+      }
+    }
+  }
+
+  def handleOrdering(question: NodeSeq, id: Int, name: String, grade: Double) = {
+    new Question(id, name, name, grade) with Ordering {
+      def answers = {
+        for((answer, index) <- (question \ "presentation" \ "flow" \ "flow" \ "response_lid" \"render_choice" \ "flow_label" zipWithIndex))
+        yield {
+          val anstext = (answer \ "response_label" \ "flow_mat" \ "material" \ "mat_extension" \ "mat_formattedtext" text)
+          Answer(index, (index + 1).toString, 1, anstext)
+        }
+      }
+    }
+  }
+
+  def handleFillInBlank(question: NodeSeq, id: Int, name: String, grade: Double) = {
+    val ans = question \ "resprocessing" \ "respcondition" \ "conditionvar" \ "varequal"
+
+    if(ans.size > 0) {
+      new Question(id, name, name, grade) with FillInBlank {
+        def answers = {
+          for((answer, index) <- ans.zipWithIndex)
+          yield {
+            Answer(index, answer text, 1, "Correct")
+          }
+        }
+      }
+    } else {
+      handleEssay(question, id, name, grade)
+    }
+  }
+
+  def handleNumeric(question : NodeSeq, id: Int, name: String, grade: Double) = {
+    new Question(id, name, name, grade) with Numeric {
+      override def tolerance = {
+        val varite = (question \ "resprocessing" \ "respcondition" \ "conditionvar" \ "varite" text)
+        val varequal = (question \ "resprocessing" \ "respcondition" \ "conditionvar" \ "varequal" text)
+        (varite.toDouble - varequal.toDouble)
+      }
+  
+      def answers = {
+        val text = (question \ "resprocessing" \ "respcondition" \ "conditionvar" \ "varequal" text)
+        val feed = (question \ "itemfeedback" \\ "flow_mat" \ "material" \ "mat_extension" \ "mat_formattedtext" text)
+        List(Answer(1, text, 1, feed))
       }
     }
   }
 
   def make = {
     val header = parseInfo
-    new Course(header, traverse(source \\ "organization"), announcements)
+    new Course(header, traverse(source \\ "organization"), announcements ++ categories)
   }
 
   def defineResource(ref: String) = {
@@ -128,7 +219,7 @@ class IMSManifest(val working: String) {
 
   def handleTest(ref: String, file: Node) = {
     withIdName(file) { (id, name) => 
-      Quiz(id, name, ref, file \\ "TEXT" text)
+      new Quiz(id, name, ref, file \\ "TEXT" text)
     }
   }
 
@@ -143,7 +234,7 @@ class IMSManifest(val working: String) {
         case "DiscussionBoard" => "Discussion Board"
         case someString: String => someString
       }
-      Section(name)
+      new Section(name)
     }
   }
 
@@ -162,7 +253,7 @@ class IMSManifest(val working: String) {
       val image = (staffinfo \\ "IMAGE")(0) \ "@value" text
 
       val contact = Contact(formaltitle, given, family, email, phone, office, image)  
-      StaffInformation(id.toInt, "%s %s %s" format(formaltitle, given, family), ref, contact) 
+      new StaffInformation(id.toInt, "%s %s %s" format(formaltitle, given, family), ref, contact) 
     }
   }
 
@@ -187,15 +278,15 @@ class IMSManifest(val working: String) {
  
       // Handling of the particulars 
       if(url != "") {
-        ExternalLink(id, name, ref, url)
+        new ExternalLink(id, name, ref, url)
       } else if(files.size > 1) {
-        Directory(id, name, ref, processFiles(files))
+        new Directory(id, name, ref, processFiles(files))
       } else if(files.size == 1) {
-        SingleFile(id, name, ref, processFiles(files).head)
+        new SingleFile(id, name, ref, processFiles(files).head)
       } else if(text != ""){
-        OnlineDocument(id, name, ref, text)
+        new OnlineDocument(id, name, ref, text)
       } else {
-        Label(id, name, ref)
+        new Label(id, name, ref)
       }
     }
   }
@@ -210,7 +301,7 @@ class IMSManifest(val working: String) {
 
   def handleLabel(ref: String, xml: Node) = {
     withIdName(xml) { (id, name) =>
-      Label(id, name, ref)
+      new Label(id, name, ref)
     }
   }
 
@@ -219,7 +310,7 @@ class IMSManifest(val working: String) {
    */
   def handleUnknown(ref: String) = {
     withDat(ref) { file =>
-      withIdName(file) { (id, name) => Label(id, name, ref) }
+      withIdName(file) { (id, name) => new Label(id, name, ref) }
     }
   }
 
@@ -244,10 +335,6 @@ class IMSManifest(val working: String) {
       nodePrint(file)
     }
   }
-}
-
-object DatHandler {
-  
 }
 
 // Middle conversion; A Resource may be BB specific
