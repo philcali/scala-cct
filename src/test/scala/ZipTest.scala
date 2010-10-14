@@ -4,25 +4,18 @@ package test
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import Zip._
+import clean.remove
 
 class ZipSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   import java.io.File
   val archivePath = getClass.getClassLoader.getResource("archive.zip")
 
   override def afterAll(configMap: Map[String, Any]) {
-    def recurse(file: File)(fun: File => Unit) {
-      if(file.isDirectory) 
-        file.listFiles.filter(f => !f.getName.startsWith(".")).foreach {
-          recurse(_)(fun)
-        }
-      fun(file)
-    }
-
     // Delete temp files
-    recurse(new File("archive")) { _.delete }
-    recurse(new File("temp")) { _.delete }
-    new File("../archive.zip").delete
-    new File("archive.zip").delete
+    remove("archive")
+    remove("temp")
+    remove("../archive.zip")
+    remove("archive.zip")
   }
 
   "Test archive" should "exists" in {

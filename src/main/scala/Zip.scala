@@ -67,22 +67,21 @@ object Zip {
 
     val newEntry = parent match {
       case Some(entry) => new ZipEntry(entry.getName + appender) 
-      case None => new ZipEntry(appender)
+      case None => new ZipEntry("./")
     }
    
     // Put entry in zip
     out.putNextEntry(newEntry)
 
     if(file.isDirectory) {
-      out.closeEntry
       val children = file.listFiles.filter(f => !f.getName.startsWith("."))
       for(child <- children) (zip(out, Some(newEntry), child))
     } else {
       withc(new java.io.FileInputStream(file)) { fis =>
         readStream(fis, out)
       }
-      out.closeEntry
     }
+    out.closeEntry
   }
 
   def archive(dir: String, dest: String = "./") = {

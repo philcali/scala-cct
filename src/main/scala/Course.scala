@@ -19,13 +19,13 @@ class Announcement(id: Int, name: String, from: String, val shorttext: String) e
 class Forum(id: Int, name: String, from: String, val shorttext: String) extends Module(id, name, from)
 
 // Staff Information
-class StaffInformation(id: Int, name: String, from: String, val contact: Contact) extends Module(id, name, from)
+class StaffInformation(id: Int, name: String, from: String, val contact: Contact) extends Module(id, name, from) with Resource
 case class Contact(title: String, given: String, family: String, 
                    email: String, phone: String, office: String, image: String)
 
 
 // Quiz / Assignments
-class Quiz(id: Int, name: String, from: String, val description: String) extends Module(id, name, from)
+class Quiz(id: Int, name: String, from: String, val description: String, val category: QuestionCategory) extends Module(id, name, from)
 
 // Question / Question types
 class QuestionCategory(id: Int, name: String, from: String, val info: String, val questions: Seq[Question]) extends Module(id, name, from)

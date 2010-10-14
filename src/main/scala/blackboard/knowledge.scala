@@ -1,17 +1,36 @@
 package com.philipcali.cct
+package blackboard
 
+import system.{KnowledgeTag, Tagger, Embed}
+import knowledge._
 import course._
+import clean._
 import scala.xml._
+import Zip.extract
 
-class IMSManifest(val working: String) {
+class BlackboardKnowledgeTag extends KnowledgeTag {
+  def name = "blackboard"
+  def version = "6.5+"
+}
+
+object BlackboardKnowledge extends Tagger[BlackboardKnowledgeTag] {
+  def tag = new BlackboardKnowledgeTag
+  def apply(archive: String) = new BlackboardKnowledge(archive)
+}
+
+class BlackboardKnowledge(val archive: String) extends Knowledge with Embed {
+  val embedPattern = """@X@EmbeddedFile\.Location@X@""".r  
+
+  val working = "temp/" + archive.split("/").last.split("\\.")(0)
+
   // The manifest source
   def source = XML.loadFile(working + "/imsmanifest.xml")
 
   // Namespace
-  val bb = source.getNamespace("bb")
+  def bb = source.getNamespace("bb")
 
   // Creates a map with the resource identifier and the resource
-  val resources = for(node <- source \\ "resource") yield { 
+  lazy val resources = for(node <- source \\ "resource") yield { 
      Resource(node.attribute(bb, "title").get.text, 
               node.attribute("identifier").get.text,
               node.attribute("type").get.text)
@@ -35,6 +54,8 @@ class IMSManifest(val working: String) {
       }
     }
   }
+
+  lazy val nondisplay = announcements ++ categories
 
   def announcements = {
     withResources(_.tpe contains("announcement")) { (res, file) =>
@@ -100,7 +121,7 @@ class IMSManifest(val working: String) {
             case Some(node) => value(question, "@maxvalue")
             case None => value(question, "@minvalue")
           }
-          Answer(index, text, if(weight == "") 0 else weight.toDouble)
+          Answer(index + 1, text, if(weight == "") 0 else weight.toDouble)
         }
       }
     }
@@ -132,7 +153,7 @@ class IMSManifest(val working: String) {
         yield {
           val text = (answer \ "material" \ "mat_extension" \ "mat_formattedtext" text)
           val anstext = (((question \ "presentation" \ "flow")(2) \ "flow")(index+1) \ "flow" \ "material" \ "mat_extension" \ "mat_formattedtext" text)
-          Answer(index, text, 1, anstext)
+          Answer(index + 1, text, 1, anstext)
         }
       }
     }
@@ -184,15 +205,18 @@ class IMSManifest(val working: String) {
   }
 
   def make = {
+    // Extract our zip
+    extract(archive, "temp")
+    
     val header = parseInfo
-    new Course(header, traverse(source \\ "organization"), announcements ++ categories)
+    new Course(header, traverse(source \\ "organization"), nondisplay)
   }
 
   def defineResource(ref: String) = {
     resources find(_.ident == ref) match {
       case Some(resource) => {
         resource.tpe match {
-          case "course/x-bb-coursetoc" => handleToc _
+          case "course/x-bb-coursetoc" => handleSection _
           case "resource/x-bb-staffinfo" => handleStaff _
           case "resource/x-bb-document" => handleBBDocument _
           case _ => handleUnknown _
@@ -219,11 +243,13 @@ class IMSManifest(val working: String) {
 
   def handleTest(ref: String, file: Node) = {
     withIdName(file) { (id, name) => 
-      new Quiz(id, name, ref, file \\ "TEXT" text)
+      new Quiz(id, name, ref, file \\ "TEXT" text, 
+        nondisplay.find(m => m.name == name && 
+                        m.isInstanceOf[QuestionCategory]).get.asInstanceOf[QuestionCategory])
     }
   }
 
-  def handleToc(ref: String) = {
+  def handleSection(ref: String) = {
     withDat(ref) { file =>
       val label = (file \\ "LABEL")(0) \ "@value" text
       val name = label.split("\\.")(1) match {
@@ -280,23 +306,35 @@ class IMSManifest(val working: String) {
       if(url != "") {
         new ExternalLink(id, name, ref, url)
       } else if(files.size > 1) {
-        new Directory(id, name, ref, processFiles(files))
+        new Directory(id, name, ref, processFiles(ref, files))
       } else if(files.size == 1) {
-        new SingleFile(id, name, ref, processFiles(files).head)
+        new SingleFile(id, name, ref, processFiles(ref, files).head)
       } else if(text != ""){
-        new OnlineDocument(id, name, ref, text)
+        new OnlineDocument(id, name, ref, knowText(text))
       } else {
         new Label(id, name, ref)
       }
     }
   }
 
-  def processFiles(files: NodeSeq) = {
+  def processFiles(ref: String, files: NodeSeq) = {
     (for(file <- files; 
       val name = (file \ "NAME" text);
       val linkname = (file \ "LINKNAME")(0) \ "@value" text;
-      val size = (file \\ "SIZE")(0) \ "@value" text) 
-    yield (File(name, linkname, size.toLong))).toList
+      val size = ((file \\ "SIZE")(0) \ "@value" text).toLong) 
+    yield {
+      val dir = new java.io.File(working + "/" + ref)
+      dir.listFiles.find(_.getName == linkname) match {
+        case Some(f) => File(name, linkname, size)
+        case None => {
+          val newName = fileclean(name)
+          val badFile = dir.listFiles.find(_.length == size).get
+          val newFile = new java.io.File(working + "/" + ref + "/" + newName)
+          badFile.renameTo(newFile)
+          File(newName, newName, size)
+        }
+      }
+    }).toList
   }
 
   def handleLabel(ref: String, xml: Node) = {
@@ -339,4 +377,3 @@ class IMSManifest(val working: String) {
 
 // Middle conversion; A Resource may be BB specific
 case class Resource(title: String, ident: String, tpe: String)
-case class Organization(name: String, ref: String, level: Int, children: Seq[Organization])

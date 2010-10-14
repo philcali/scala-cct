@@ -10,7 +10,14 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
  
   // Scala check
   val scalacheck = "org.scalatest" % "scalatest" % "1.2"
+
+  // Logging framework
+  val sl4j = "org.slf4j" % "slf4j-api" % "1.6.1"
+  val simple = "org.slf4j" % "slf4j-simple" % "1.6.1"
  
-  // Unfiltered for dedicated web server
-  val unfiltered = "net.databinder" %% "unfiltered-server" % "0.1.4"
+  // Unfiltered Library
+  val ufj = "net.databinder" %% "unfiltered-jetty" % "0.2.0"
+  val uff = "net.databinder" %% "unfiltered-filter" % "0.2.0"
+  val ufs = "net.databinder" %% "unfiltered-scalate" % "0.2.0"
+  val ufu = "net.databinder" %% "unfiltered-uploads" % "0.2.0"
 }

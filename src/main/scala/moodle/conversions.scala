@@ -1,189 +1,59 @@
-package com.philipcali.cct.moodle
+package com.philipcali.cct
+package moodle
 
-import com.philipcali.cct.course._
-import java.util.Date
+import system.Embed
+import course._
+import clean._
+import java.io.File
+import grizzled.util.{withCloseable => withc}
+import scala.io.Source.{fromFile => open}
 
-class MoodleTransformer(val working: String) {
-  def infoMods = Map("label" -> ((m: Module) => m.isInstanceOf[Label]),
-                     "resource" -> ((m: Module) => m.isInstanceOf[Resource]),
-                     "quiz" -> ((m: Module) => m.isInstanceOf[Quiz]))
-
-  def transform(course: Course) = {
-    
-    implicit def module2MoodleModule(m: Module) = m match {
-      case category: QuestionCategory => new MoodleQuestionCateogry(category)
-      case label: Label => new MoodleLabel(label)
-      case file: SingleFile => new MoodleSingleFile(file)
-      case dir: Directory => new MoodleDirectory(dir)
-      case online: OnlineDocument => new MoodleOnlineText(online)
-      case link: ExternalLink => new MoodleExternalLink(link)
-      case quiz: Quiz => new MoodleQuiz(quiz, 
-                  course.nondisplay.find(_.name == quiz.name).get.asInstanceOf[QuestionCategory])
-      case _ => new MoodleLabel(m)
-    }
-
-    <MOODLE_BACKUP>
-      <INFO>
-        <NAME>backup-xxx.zip</NAME>
-        <MOODLE_VERSION>2007101501</MOODLE_VERSION>
-        <MOODLE_RELEASE>1.8</MOODLE_RELEASE>
-        <BACKUP_VERSION>2007101000</BACKUP_VERSION>
-        <BACKUP_RELEASE>1.8</BACKUP_RELEASE>
-        <DATE>{ new Date().getTime }</DATE>
-        <ORIGINAL_WWWROOT>http://philcalicode.blogspot.com</ORIGINAL_WWWROOT>
-        <ZIP_METHOD>internal</ZIP_METHOD>
-        <DETAILS>
-            { infoMods.map { tupes =>
-                val instances = course.details.filter(tupes._2)
-                if(instances.size > 0) {
-                  <MOD>
-                    <NAME>{ tupes._1 }</NAME>
-                    <INCLUDED>true</INCLUDED>
-                    <USERINFO>false</USERINFO>
-                    <INSTANCES> {
-                       instances map { instance =>
-                        <INSTANCE>
-                        <ID>{ instance.id }</ID>
-                        <NAME>{ instance.name }</NAME>
-                        <INCLUDED>true</INCLUDED>
-                        <USERINFO>false</USERINFO>
-                        </INSTANCE>
-                        }
-                     }
-                    </INSTANCES>
-                  </MOD>
-                 }
-                else ""
-              }
-            }
-          <METACOURSE>false</METACOURSE>
-          <USERS>none</USERS>
-          <LOGS>false</LOGS>
-          <USERFILES>false</USERFILES>
-          <COURSEFILES>true</COURSEFILES>
-          <SITEFILES>true</SITEFILES>
-          <GRADEBOOKHISTORIES>false</GRADEBOOKHISTORIES>
-          <MESSAGES>false</MESSAGES>
-          <BLOGS>false</BLOGS>
-        </DETAILS>
-      </INFO>
-      <ROLES></ROLES>
-      <COURSE>
-        <HEADER>
-          <ID></ID>
-          <CATEGORY>
-            <ID>1</ID>
-            <NAME>Miscellaneous</NAME>
-          </CATEGORY>
-          <PASSWORD></PASSWORD>
-          <FULLNAME>{ course.info.title }</FULLNAME>
-          <SHORTNAME>{ course.info.title.split(" ").mkString }</SHORTNAME>
-          <IDNUMBER></IDNUMBER>
-          <SUMMARY>{ course.info.description }</SUMMARY>
-          <FORMAT>topics</FORMAT>
-          <SHOWGRADES>1</SHOWGRADES>
-          <NEWSITEMS>1</NEWSITEMS>
-          <TEACHER>Teacher</TEACHER>
-          <TEACHERS>Teachers</TEACHERS>
-          <STUDENT>Student</STUDENT>
-          <STUDENTS>Students</STUDENTS>
-          <GUEST>0</GUEST>
-          <STARTDATE>1282539600</STARTDATE>
-          <NUMSECTIONS>5</NUMSECTIONS>
-          <MAXBYTES>0</MAXBYTES>
-          <SHOWREPORTS>0</SHOWREPORTS>
-          <GROUPMODE>0</GROUPMODE>
-          <GROUPMODEFORCE>0</GROUPMODEFORCE>
-          <DEFAULTGROUPINGID>0</DEFAULTGROUPINGID>
-          <LANG></LANG>
-          <THEME></THEME>
-          <COST></COST>
-          <CURRENCY>USD</CURRENCY>
-          <MARKER>0</MARKER>
-          <VISIBLE>1</VISIBLE>
-          <HIDDENSECTIONS>0</HIDDENSECTIONS>
-          <TIMECREATED></TIMECREATED>
-          <TIMEMODIFIED></TIMEMODIFIED>
-          <METACOURSE>0</METACOURSE>
-          <EXPIRENOTIFY>0</EXPIRENOTIFY>
-          <NOTIFYSTUDENTS>0</NOTIFYSTUDENTS>
-          <EXPIRYTHRESHOLD>864000</EXPIRYTHRESHOLD>
-          <ENROLLABLE>1</ENROLLABLE>
-          <ENROLSTARTDATE>0</ENROLSTARTDATE>
-          <ENROLENDDATE>0</ENROLENDDATE>
-          <ENROLPERIOD>0</ENROLPERIOD>
-          <ROLES_OVERRIDES>
-          </ROLES_OVERRIDES>
-          <ROLES_ASSIGNMENTS>
-          </ROLES_ASSIGNMENTS>
-        </HEADER>
-        <BLOCKS/>
-        <SECTIONS>
-          { course.sections.filter(_.children.size != 0).zipWithIndex.map { entry =>
-              val (section, index) = entry
-              <SECTION>
-                <ID>{ index + 2 }</ID>
-                <NUMBER>{ index + 1 }</NUMBER>
-                <SUMMARY>{ section.wrapped.name }</SUMMARY>
-                <VISIBLE>1</VISIBLE>
-                <MODS>
-                  { course.mods(section).zipWithIndex.map { modEntry =>
-                     val (mod, modID) = modEntry
-                     <MOD>
-                      <ID>{ index + mod.wrapped.id + modID }</ID>
-                      <TYPE>{ determine(mod.wrapped) }</TYPE>
-                      <INSTANCE>{ mod.wrapped.id }</INSTANCE>
-                      <ADDED/>
-                      <SCORE>0</SCORE>
-                      <INDENT>{ mod.level - 1 }</INDENT>
-                      <VISIBLE>1</VISIBLE>
-                      <GROUPMODE>0</GROUPMODE>
-                      <GROUPINGID>0</GROUPINGID>
-                      <GROUPMEMBERSONLY>0</GROUPMEMBERSONLY>
-                      <IDNUMBER>$@NULL@$</IDNUMBER>
-                      <ROLES_OVERRIDES>
-                      </ROLES_OVERRIDES>
-                      <ROLES_ASSIGNMENTS>
-                      </ROLES_ASSIGNMENTS>
-                    </MOD>
-                    }
-                  }
-                </MODS>
-              </SECTION>
-            } 
-          }
-        </SECTIONS>
-        <QUESTION_CATEGORIES>
-          { course.nondisplay.filter(_.isInstanceOf[QuestionCategory]).map { category =>
-             category.toXML 
-            } 
-          }
-        </QUESTION_CATEGORIES>
-        <GROUPS/>
-        <GRADEBOOK/>
-        <MODULES>
-          { course.details.filter(m => !m.isInstanceOf[Section]).map { mod =>
-              mod.toXML
-            }
-          }
-        </MODULES>
-        <FORMATDATA />
-      </COURSE>
-    </MOODLE_BACKUP>
+object MoodleConversions {
+  implicit def module2MoodleModule(m: Module) = m match {
+    case category: QuestionCategory => new MoodleQuestionCateogry(category)
+    case label: Label => new MoodleLabel(label)
+    case file: SingleFile => new MoodleSingleFile(file)
+    case dir: Directory => new MoodleDirectory(dir)
+    case online: OnlineDocument => new MoodleOnlineText(online)
+    case link: ExternalLink => new MoodleExternalLink(link)
+    case quiz: Quiz => new MoodleQuiz(quiz) 
+    case staff: StaffInformation => new MoodleStaff(staff)
+    case _ => new MoodleLabel(m)
   }
-
-  def determine(m: Module) = m match {
-    case l: Label => "label"
-    case r: Resource => "resource"
-    case q: Quiz => "quiz"
-    case _ => "label"
-  }
-
 }
 
 abstract class MoodleModule(val under: Module) {
   def modType: String
   def toXML: scala.xml.Elem
+
+  def dirname = dirclean(under.name)
+
+  def transform(working: String, staging: String) {
+    val oldPath = working + "/" + under.from
+    val oldDir = new File(oldPath)
+    
+    if(oldDir.exists) {
+      val newPath = staging + "/course_files/" + dirname
+      new File(newPath).mkdir
+
+      def read(reader: java.io.Reader, writer: java.io.Writer) {
+        val buf = new Array[Char](1024)
+        reader.read(buf, 0, 1024) match {
+          case n if(n > -1) => writer.write(buf, 0, n); read(reader, writer)
+          case _ =>
+        }
+      }
+
+      recurse(oldDir) { file =>  
+        withc(new java.io.FileWriter(newPath + "/" + file.getName)) { writer =>
+          withc(new java.io.BufferedReader(new java.io.FileReader(file))) { reader =>
+            read(reader, writer)
+          }
+        }
+      }
+    }
+
+  }
 }
 
 trait MoodleResource extends MoodleModule {
@@ -208,25 +78,62 @@ trait MoodleResource extends MoodleModule {
   }
 }
 
-class MoodleOnlineText(under: OnlineDocument) extends MoodleModule(under) with MoodleResource {
+class MoodleOnlineText(under: OnlineDocument) extends MoodleModule(under) with MoodleResource with Embed {
+  val embedPattern = defaults.r
+
   def tpe = "text"
-  override def referfence = "2"
-  override def text = under.text
+  override def referfence = "1"
+  
+  override def text = {
+    embedded(under.text, 
+             """\$@FILEPHP@\$\$@SLASH@\$""" + dirname + "/")
+  }
 }
 
 class MoodleSingleFile(under: SingleFile) extends MoodleModule(under) with MoodleResource {
   def tpe = "file"
-  override def referfence = under.file.linkname
+  override def referfence = dirname + "/" + under.file.linkname
 }
 
 class MoodleDirectory(under: Directory) extends MoodleModule(under) with MoodleResource {
   def tpe = "directory"
-  override def referfence = under.name.split(" ").mkString("_")
+  override def referfence = dirname 
 }
 
 class MoodleExternalLink(under: ExternalLink) extends MoodleModule(under) with MoodleResource {
   def tpe = "file"
   override def referfence = under.url
+}
+
+class MoodleStaff(under: StaffInformation) extends MoodleModule(under) with MoodleResource {
+  def tpe = "html"
+  override def dirname = "staff_information"
+  override def referfence = ""
+  override def text = {
+    def html = {
+      val Contact(title, given, family, email, phone, office, image) = under.contact
+      val fullname = List(title, given, family) mkString " "
+
+      val img = if(image != "") <img src={ "$@FILEPHP@$$@SLASH@$" + dirname + "/" + image }/> else ""
+
+      <h1 style="text-align: center">{ fullname }</h1>
+      <table>
+        <tr>
+          <td>{ img }</td>
+          <td>
+            <ul style="list-style-type: none;">
+              <li>Name: { fullname }</li>
+              <li>Email: { email }</li>
+              <li>Phone: { phone }</li>
+              <li>Office: { office }</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    }
+
+    html.mkString
+  }
 }
 
 class MoodleLabel(under: Module) extends MoodleModule(under) {
@@ -235,6 +142,7 @@ class MoodleLabel(under: Module) extends MoodleModule(under) {
   def toXML = {
     <MOD>
       <ID>{ under.id }</ID>
+      <MODTYPE>{ modType }</MODTYPE>
       <NAME>{ under.name }</NAME>
       <CONTENT>{ under.name }</CONTENT>
       <TIMEMODIFIED />
@@ -441,12 +349,13 @@ trait MoodleQuestion extends MoodleModule {
   }
 }
 
-class MoodleQuiz(under: Quiz, category: QuestionCategory) extends MoodleModule(under) {
+class MoodleQuiz(under: Quiz) extends MoodleModule(under) {
   def modType = "quiz"
 
   def toXML = {
     <MOD>
       <ID>{ under.id }</ID>
+      <MODTYPE>{ modType }</MODTYPE>
       <NAME>{ under.name }</NAME>
       <INTRO>{ under.description }</INTRO>
       <TIMEOPEN>0</TIMEOPEN>
@@ -461,7 +370,7 @@ class MoodleQuiz(under: Quiz, category: QuestionCategory) extends MoodleModule(u
       <QUESTIONSPERPAGE>0</QUESTIONSPERPAGE>
       <SHUFFLEQUESTIONS>0</SHUFFLEQUESTIONS>
       <SHUFFLEANSWERS>1</SHUFFLEANSWERS>
-      <QUESTIONS>{ category.questions.map(_.id).mkString(",") }</QUESTIONS>
+      <QUESTIONS>{ under.category.questions.map(_.id).mkString(",") }</QUESTIONS>
       <SUMGRADES>1</SUMGRADES>
       <GRADE>10</GRADE>
       <TIMECREATED></TIMECREATED>
@@ -473,7 +382,7 @@ class MoodleQuiz(under: Quiz, category: QuestionCategory) extends MoodleModule(u
       <DELAY1>0</DELAY1>
       <DELAY2>0</DELAY2>
       <QUESTION_INSTANCES>
-        { category.questions.map { question =>
+        { under.category.questions.map { question =>
             <QUESTION_INSTANCE>
               <ID>{ question.id }</ID>
               <QUESTION>{ question.id }</QUESTION>
