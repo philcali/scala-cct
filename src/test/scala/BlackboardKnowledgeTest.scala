@@ -16,22 +16,20 @@ class BlackboardKnowledgeSpec extends KnowledgeSpec {
     remove("temp")
   }
 
-  "Test archive" should "exists" in {
-    archive should not be (null)
+  def validHeader(course: Course) {
+    course.info.title should be === "Test Blackboard 6.5+ Archive"
   }
 
-  "Blackboard Knowledge" should "produce a valid course" in {
-    val course = knowledge.make
-
-    val modules = course.details
-
-    course.info.title should be === "Test Blackboard 6.5+ Archive"
+  def validModules(modules: Seq[Module]) {
     modules.size should be === 27
     modules.filter(m => m.isInstanceOf[SingleFile]).size should be === 9
     assert(modules.find(m => m.isInstanceOf[OnlineDocument]).get.asInstanceOf[OnlineDocument].
            text.contains("--EmbedLocation--"))
-    course.nondisplay.size should be === 41
-    course.nondisplay.filter(n => n.isInstanceOf[QuestionCategory]).size should be === 40
+  }
+
+  def validNondisplay(nondisplay: Seq[Module]) {
+    nondisplay.size should be === 41
+    nondisplay.filter(n => n.isInstanceOf[QuestionCategory]).size should be === 40
   }
 
   it should "be found by the MetaFinder" in {    
