@@ -51,9 +51,31 @@ class CleanerSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
     count should be === 2
   }
 
+  it should "copy file contents" in {
+    copyFile("parent/child1/test.txt", "parent/child1/test2.txt")
+    
+    import scala.io.Source.{fromFile => open}
+
+    new File("parent/child1/test2.txt") should be ('exists)
+    open("parent/child1/test2.txt").getLines.mkString should be === "I have something awesome"
+  }
+
+  it should "copy the directorty contents" in {
+    copy(new File("parent"), new File("newParent"))
+
+    new File("newParent/test.txt") should be ('exists)
+    new File("newParent/test2.txt") should be ('exists)
+  }
+
   it should "remove parent directory" in {
     remove("parent")
 
     new File("parent") should not be ('exists)
+  }
+
+  it should "remove newParent directory" in {
+    remove("newParent")
+    
+    new File("newParent") should not be ('exists)
   }
 }
