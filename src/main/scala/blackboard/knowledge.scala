@@ -19,7 +19,7 @@ object BlackboardKnowledge extends Tagger[BlackboardKnowledgeTag] {
 }
 
 class BlackboardKnowledge(val archive: String) extends Knowledge with Embed {
-  val embedPattern = """@X@EmbeddedFile\.Location@X@""".r  
+  val embedPattern = """@X@EmbeddedFile\.location@X@""".r  
 
   val working = "temp/" + archive.split("/").last.split("\\.")(0)
 

@@ -4,6 +4,7 @@ import java.util.zip._
 import grizzled.util.{withCloseable => withc}
 
 object Zip {
+  private def append(dest: String) = if(dest.endsWith("/")) dest else dest + "/"
 
   private def readStream(is: java.io.InputStream, to: java.io.OutputStream) {
     val buf = new Array[Byte](1024)
@@ -57,8 +58,7 @@ object Zip {
     val zipin = new ZipInputStream(new java.io.FileInputStream(archive))
 
     // Let's read it
-    val realDest = (if(!dest.endsWith("/")) dest + "/" else dest) + 
-                    archive.getName.split("\\.")(0) + "/"
+    val realDest = append(dest) + archive.getName.split("\\.")(0) + "/"
     readZip(zipin, realDest)
   }
 
@@ -87,7 +87,7 @@ object Zip {
   def archive(dir: String, dest: String = "./") = {
     val dirname = new java.io.File(dir)
     
-    withc(new ZipOutputStream(new java.io.FileOutputStream(dest + dirname.getName + ".zip"))) { zipout =>
+    withc(new ZipOutputStream(new java.io.FileOutputStream(append(dest) + dirname.getName + ".zip"))) { zipout =>
       zip(zipout, None, dirname)
     }
   }

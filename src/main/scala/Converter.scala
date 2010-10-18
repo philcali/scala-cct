@@ -156,7 +156,7 @@ object Converter {
               // Remove Uploaded file
               tempFile.delete
               // Grab newly converted file of same name
-              val newFile = new java.io.File("./").listFiles.find { 
+              val newFile = new java.io.File(out).listFiles.find { 
                 f => f.getName.startsWith(tempFile.getName.split("\\.")(0))
               }.get
               Status(200) ~>

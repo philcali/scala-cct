@@ -34,7 +34,8 @@ abstract class MoodleModule(val under: Module) {
     
     if(oldDir.exists) {
       val newPath = staging + "/course_files/" + dirname
-      new File(newPath).mkdir
+      val newFile = new File(newPath)
+      newFile.mkdir
 
       def read(reader: java.io.Reader, writer: java.io.Writer) {
         val buf = new Array[Char](1024)
@@ -44,10 +45,12 @@ abstract class MoodleModule(val under: Module) {
         }
       }
 
-      recurse(oldDir) { file =>  
-        withc(new java.io.FileWriter(newPath + "/" + file.getName)) { writer =>
-          withc(new java.io.BufferedReader(new java.io.FileReader(file))) { reader =>
-            read(reader, writer)
+      recurse(oldDir) { file => 
+        if(file.isFile) { 
+          withc(new java.io.FileWriter(newPath + "/" + file.getName)) { writer =>
+            withc(new java.io.BufferedReader(new java.io.FileReader(file))) { reader =>
+              read(reader, writer)
+            }
           }
         }
       }
