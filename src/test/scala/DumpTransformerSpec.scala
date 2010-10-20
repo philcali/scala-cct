@@ -27,15 +27,15 @@ class DumpTransformerSpec extends TransformerSpec {
   }
   
   it should "produce the right number of sections" in {
-    (file \\ "ORGANIZATION" \ "MODULE").size should be === 3
+    (file \\ "ORGANIZATION" \ "MODULES" \ "MODULE").size should be === 3
   }
 
   "The first section" should "produce the correct number of modules" in {
-    ((file \\ "ORGANIZATION" \ "MODULE")(0) \ "MODULES" \\ "MODULE") .size should be === 5
+    ((file \\ "ORGANIZATION" \ "MODULES" \ "MODULE")(0) \\ "MODULE") .size should be === 6
   }
 
   it should "produce the correct module types" in {
-    val types = for(module <- (file \\ "ORGANIZATION" \ "MODULE")(0) \ "MODULES" \\ "MODULE") 
+    val types = for(module <- (file \\ "ORGANIZATION" \ "MODULES" \ "MODULE")(0) \ "MODULES" \\ "MODULE") 
       yield {
         module \ "TYPE" text
       }

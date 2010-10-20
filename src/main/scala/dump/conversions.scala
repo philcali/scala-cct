@@ -109,15 +109,18 @@ class DumpStaffInformation(val under: CourseModule, val module: StaffInformation
       <EMAIL>{ module.contact.email }</EMAIL>
       <PHONE>{ module.contact.phone }</PHONE>
       <OFFICE>{ module.contact.office }</OFFICE>
+      <IMAGE>{ module.contact.image }</IMAGE>
     </CONTACT>
   }
 }
 
 class DumpQuiz(val under: CourseModule, val module: Quiz) extends DumpModule {
+  import DumpConversions.nondisplay2DumpModule  
+
   override def extraXML = {
     <EXTRA>
       <INFO>{ module.description }</INFO>
-      <CATEGORY-ID>{ module.category.id }</CATEGORY-ID> 
+      { module.category.toXML } 
     </EXTRA>
   }
 }

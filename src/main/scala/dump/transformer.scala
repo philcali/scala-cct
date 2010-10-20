@@ -44,7 +44,9 @@ class DumpTransformer(val working: String, val output: String) extends Transform
           <TITLE>{ course.info.title }</TITLE>
           <DESCRIPTION>{ course.info.description }</DESCRIPTION>
         </INFO>
-        <ORGANIZATION>{ course.sections.map(_.toXML) }
+        <ORGANIZATION>
+          <MODULES>{ course.sections.map(_.toXML) }
+          </MODULES>
         </ORGANIZATION>
         <NONDISPLAY>{ course.nondisplay.map(_.toXML) }
         </NONDISPLAY>

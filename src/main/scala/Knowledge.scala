@@ -16,10 +16,4 @@ trait Knowledge {
 
   val nondisplay: Seq[Module]
 
-  def handleDocument(ref: String, xml: Node): Module
-  def handleSection(ref: String): Section
-  def handleStaff(ref: String): StaffInformation 
-  def handleTest(ref: String, xml: Node): Quiz 
-  def handleLabel(ref: String, xml: Node): Label
-  def handleUnknown(ref: String): Label
 }
