@@ -29,7 +29,7 @@ package object clean {
   def readStream(in: java.io.InputStream, out: java.io.OutputStream) {
     val buffer = new Array[Byte](1024)
     in.read(buffer) match {
-      case n if(n != -1) => out.write(buffer, 0, n); readStream(in, out)
+      case n if(n > -1) => out.write(buffer, 0, n); readStream(in, out)
       case _ =>
     }
   }
@@ -44,7 +44,7 @@ package object clean {
 
   def copy(oldDir: java.io.File, newDir: java.io.File) {
     newDir.mkdir
-
+  
     recurse(oldDir) { file => 
       if(file.isFile) {
         copyFile(file.getAbsolutePath, newDir.getAbsolutePath + "/" + file.getName)

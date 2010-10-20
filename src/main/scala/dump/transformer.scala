@@ -23,7 +23,8 @@ object DumpTransformer extends DumpTransformerTag {
 
 class DumpTransformer(val working: String, val output: String) extends Transformer {
   def staging = {
-    val newDir = new JFile(working + "_dump")
+    val oldDir = new JFile(working)
+    val newDir = new JFile(oldDir.getName + "_dump")
     
     if(!newDir.exists) {
       newDir.mkdir
@@ -33,22 +34,28 @@ class DumpTransformer(val working: String, val output: String) extends Transform
   }
 
   def transform(course: Course) {
-    def courseXml = {
-      course.sections.foreach { section => 
-        course.mods(section).foreach(_.transform(working, staging))
-      }
+    course.sections.foreach { section => 
+      course.mods(section).foreach(_.transform(working, staging))
+    }
 
+    def courseXML = {
       <COURSE>
         <INFO>
-          <TITLE>{course.info.title}</TITLE>
-          <DESCRIPTION>{course.info.description}</DESCRIPTION>
+          <TITLE>{ course.info.title }</TITLE>
+          <DESCRIPTION>{ course.info.description }</DESCRIPTION>
         </INFO>
         <ORGANIZATION>{ course.sections.map(_.toXML) }
         </ORGANIZATION>
-        <NONDISPLAY>
+        <NONDISPLAY>{ course.nondisplay.map(_.toXML) }
         </NONDISPLAY>
       </COURSE>
     }
+
+    scala.xml.XML.save(staging + "/dump.xml", courseXML, "UTF-8", true)
+    
+    archive(staging, output) 
+
+    cleanup()
   }
 
   def cleanup() = { 

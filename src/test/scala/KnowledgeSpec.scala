@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 import knowledge._
 import system._
 import course._
+import clean.remove
 
 trait KnowledgeSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   val knowledge: Knowledge
@@ -14,6 +15,10 @@ trait KnowledgeSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll 
   lazy val (name, packs) = {
     val split = knowledge.getClass.getPackage.getName.split("\\.")
     (split.last, split.dropRight(1).mkString("."))
+  }
+
+  override def afterAll(config: Map[String, Any]) {
+    remove("temp")
   }
 
   def validHeader(course: Course)
