@@ -1,0 +1,63 @@
+#import(com.philipcali.cct.system._)
+<%@ import val knowledge: KnowledgeTag %>
+<%@ import val transformer: TransformerTag %>
+
+<html>
+  <head>
+    <title>Conversion</title>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="http://github.com/malsup/form/raw/master/jquery.form.js?v2.43"></script>
+    <style type="text/css">
+      body {
+        font-family: "Verdana", sans-serif;
+        background-color: #B5AFA3;
+      }
+      .page {
+        width: 70%;
+        margin: auto;
+        border: 1px solid #000;
+      }
+      .header {
+        background-color: #461d7c;
+        color: #eee;
+        border-bottom: 1px dotted #666;
+        padding: 10px;
+      }
+      .header h1 {
+        margin: 0 0;
+      }
+      .content {
+        background-color: #FCECAE;
+        padding: 10px;
+      }  
+    </style>
+  </head>
+  <body>
+    <div class = "page">
+      <div class = "header">
+        <h1>${knowledge.name} ${knowledge.version} to ${transformer.name} ${transformer.version}</h1>
+      </div>
+      <div class = "content">
+        <form id="form" method="POST" enctype="multipart/form-data" action="/upload">
+          <span>${knowledge.name} archive:</span>
+          <input type="file" name="archive"/><br/>
+          <input type="submit" name="Go"/>
+        </form>
+        <div class="dynamic"><div/>
+      </div>
+    </div>
+    
+  </body>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("#form").ajaxForm({
+        beforeSubmit: function() {
+          $(".dynamic").html("Uploading / Converting...");
+        },
+        success: function(data) {
+          $(".dynamic").html(data);
+        }
+      });
+    });
+  </script>
+</html>

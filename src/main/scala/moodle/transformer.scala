@@ -6,7 +6,7 @@ import system.{TransformerTag, Tagger}
 import Zip.archive
 import MoodleConversions._
 import course._
-import clean.remove
+import Utils.remove
 
 import java.util.Date
 import grizzled.util.{withCloseable => withc}

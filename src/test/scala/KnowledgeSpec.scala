@@ -7,7 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 import knowledge._
 import system._
 import course._
-import clean.remove
+import Utils.remove
 
 trait KnowledgeSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   val knowledge: Knowledge

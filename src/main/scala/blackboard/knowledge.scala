@@ -4,7 +4,7 @@ package blackboard
 import system.{KnowledgeTag, Tagger, Embed}
 import knowledge._
 import course._
-import clean._
+import Utils._
 import scala.xml._
 import Zip.extract
 

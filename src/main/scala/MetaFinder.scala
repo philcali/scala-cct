@@ -8,6 +8,10 @@ import system._
 
 import java.lang.Class
 
+/**
+ * Finds Knowledges and Transformers for the main
+ * converter.
+ */
 object MetaFinder {
   
   def find[A](tpe: String, name: String, pack: String = "com.philipcali.cct") = {

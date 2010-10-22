@@ -4,7 +4,7 @@ package dump
 
 import course._
 import java.io.{File => JFile}
-import clean.copy
+import Utils.copy
 
 object DumpConversions {
   implicit def module2DumpModule(m: CourseModule): DumpModule = m.wrapped match {

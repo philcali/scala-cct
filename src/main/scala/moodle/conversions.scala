@@ -3,7 +3,7 @@ package moodle
 
 import system.Embed
 import course._
-import clean._
+import Utils._
 import java.io.File
 import grizzled.util.{withCloseable => withc}
 import scala.io.Source.{fromFile => open}
@@ -37,23 +37,7 @@ abstract class MoodleModule(val under: Module) {
       val newFile = new File(newPath)
       newFile.mkdir
 
-      def read(reader: java.io.Reader, writer: java.io.Writer) {
-        val buf = new Array[Char](1024)
-        reader.read(buf, 0, 1024) match {
-          case n if(n > -1) => writer.write(buf, 0, n); read(reader, writer)
-          case _ =>
-        }
-      }
-
-      recurse(oldDir) { file => 
-        if(file.isFile) { 
-          withc(new java.io.FileWriter(newPath + "/" + file.getName)) { writer =>
-            withc(new java.io.BufferedReader(new java.io.FileReader(file))) { reader =>
-              read(reader, writer)
-            }
-          }
-        }
-      }
+      copy(oldDir, newFile)
     }
 
   }

@@ -9,7 +9,32 @@ import unfiltered.scalate.Scalate
 import org.fusesource.scalate._
 
 import finder.MetaFinder
+import Utils._
 
+/**
+ * The Converter object is the main entry point for the commandline
+ * base course converter app.
+ *
+ * Example usage:
+
+{{{
+    cct [--web] [--port=80] [--knowledge=blackboard[:package]] [-r] [--input=path] 
+        [--transformer=moodle[:package]] [--output=directory]
+    
+    Options:
+    -h, --help         | prints out this help
+    -w, --web          | starts a web interface
+    -p, --port         | runs web server on specified port: default 80
+    -k, --knowledge    | uses knowledge from KnowledgeTag
+    -t, --transformer  | uses transformer from TransformerTag
+    -r, --recursive    | uses files in recursive as input (ignored in web mode)
+    -i, --input        | uses this input path (ignored in web mode)
+    -o, --output       | dumps converted to this directory
+}}}
+
+ *
+ * @author Philip Cali
+ */
 object Converter {
   def help = {
     println("usage: cct [--web] [--port=80] [--knowledge=blackboard[:package]] [-r] [--input=path] [--transformer=moodle[:package]] [--output=directory]")
@@ -171,7 +196,7 @@ object Converter {
         val folder = new java.io.File(config("input"))
 
         // Traverses all sub folders
-        clean.recurse(folder) { file =>
+        recurse(folder) { file =>
           if(file.getName.contains(".zip"))
             convert(file.getAbsolutePath, out, knowledgeName, transformerName)
         }
@@ -181,7 +206,7 @@ object Converter {
       }
    
       // Cleanup temp dir
-      clean.remove("temp")
+      remove("temp")
  
     } catch {
       case e: Exception => println(e.toString)

@@ -1,7 +1,7 @@
 package com.philipcali.cct
 package dump
 
-import system.KnowledgeTag
+import system.{Tagger, KnowledgeTag}
 import knowledge.Knowledge
 import Zip.extract
 import course._
@@ -11,7 +11,7 @@ class DumpKnowledgeTag extends KnowledgeTag {
   def version = "1.0"
 }
 
-object DumpKnowledge extends DumpKnowledgeTag {
+object DumpKnowledge extends Tagger[DumpKnowledgeTag] {
   def tag = new DumpKnowledgeTag
   def apply(archive: String) = new DumpKnowledge(archive)
 }

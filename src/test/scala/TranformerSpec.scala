@@ -8,7 +8,7 @@ import java.io.{File => JFile, FileWriter}
 
 import transformer._
 import course._
-import clean._
+import Utils._
 
 trait TransformerSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   val transformer: Transformer

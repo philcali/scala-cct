@@ -3,7 +3,7 @@ package test
 
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
-import clean._
+import Utils._
 import java.io.{File, FileWriter}
 import grizzled.util.{withCloseable => withc}
 

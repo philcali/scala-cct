@@ -2,18 +2,13 @@ package com.philipcali.cct
 
 import java.util.zip._
 import grizzled.util.{withCloseable => withc}
+import Utils.readStream
 
+/**
+ * Handles all the extraction and archival needs of conversions
+ */
 object Zip {
   private def append(dest: String) = if(dest.endsWith("/")) dest else dest + "/"
-
-  private def readStream(is: java.io.InputStream, to: java.io.OutputStream) {
-    val buf = new Array[Byte](1024)
-
-    is.read(buf, 0, 1024) match {
-      case n if(n > -1) => to.write(buf, 0, n); readStream(is, to)
-      case _ =>
-    }
-  }
 
   private def newFolderFromName(name: String) {
     val folder = new java.io.File(name)
@@ -52,6 +47,12 @@ object Zip {
     } 
   }
 
+  /**
+   * Takes a zip full path, and a possible destination, and extracts
+   *
+   * Ex: {{{ extract("archive.zip") // yields a directory archive in "." }}}
+   * Ex: {{{ extract("archive.zip", "temp/archives") // yields temp/archives/archive }}}
+   */
   def extract(file: String, dest: String = "./") = {
     newFolderFromName(dest) 
     val archive = new java.io.File(file)
@@ -84,6 +85,12 @@ object Zip {
     out.closeEntry
   }
 
+  /**
+   * Archives a directory as a ".zip"
+   *
+   * Ex: {{{ archive("archive") // yields "archive.zip" }}}
+   * Ex: {{{ archive("archive", "temp/archives") // yields temp/archives/archive.zip }}}
+   */
   def archive(dir: String, dest: String = "./") = {
     val dirname = new java.io.File(dir)
     

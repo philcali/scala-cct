@@ -4,6 +4,9 @@ package knowledge
 import scala.xml.{Elem, Node, NodeSeq}
 import course._
 
+/**
+ * A knowledge knows about whatever we're dealing with, and creates a Course object
+ */
 trait Knowledge {
 
   val working: String 

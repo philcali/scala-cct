@@ -3,9 +3,9 @@ package com.philipcali.cct
 package dump
 
 import Zip.archive
-import system.TransformerTag
+import system.{Tagger, TransformerTag}
 import transformer.Transformer
-import clean.{remove, copy}
+import Utils.{remove, copy}
 import course._
 import java.io.{File => JFile}
 import DumpConversions._
@@ -16,7 +16,7 @@ class DumpTransformerTag extends TransformerTag {
   def suffix = "_dump"
 }
 
-object DumpTransformer extends DumpTransformerTag {
+object DumpTransformer extends Tagger[DumpTransformerTag] {
   def tag = new DumpTransformerTag
   def apply(working: String, output: String = "./") = new DumpTransformer(working, output)
 }

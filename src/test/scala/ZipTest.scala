@@ -4,7 +4,7 @@ package test
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import Zip._
-import clean.remove
+import Utils.remove
 
 class ZipSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   import java.io.File
