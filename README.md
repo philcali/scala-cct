@@ -21,6 +21,46 @@ I recommend looking at the [options] for the converter to see how it works.
 
 # The Conversion
 
+The conversion process is defined by command-line options through
+--knowledge and --transformer
+
+---
+
+# Knowledge
+
+A knowledge is simply the bit of Intelligence the converter uses to
+"understand" how to interpret its input. This converter has two
+knowledges built into it: A blackboard 6.5 < 8.0 archive understanding,
+and some internal archive called a course dump.
+
+
+Any programmer can easily extend the converter's functionality by
+implementing a `Knowledge`. The converter scans the classpath for known
+Knowledges, and gives the user the ability to use it.
+
+
+A knowledge takes a given archive, or whatever (it could be anything
+really, a database, a document, a tarball, a webpage), turn that into
+sets of objects for conversion. This object model is important to the
+transformer.
+
+# Transformer
+
+Not the robot in disguise, though that is a perfectly valid definition.
+
+A transformer takes an object model, and transforms it into something
+real, (a database, a document, an archive, a web page, etc). This
+converter comes with two: A moodle 1.8 < 2.0 archive, and a course dump.
+
+Like a knowledge, programmer can extend the converter's functionality by
+simply implementing a `Transformer`.
+
+---
+
+**Note**: the converter comes with a knowledge and transformer of its
+own format called `dumps`. This is important for users who don't have a
+corresponding transformer for their system, or just want the data from
+a knowledge.
 
 [options]: tools.api
 [cct]: https://tigerbytes2.lsu.edu/users/pcali1/moodlecct/index.html
