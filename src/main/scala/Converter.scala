@@ -10,6 +10,7 @@ import org.fusesource.scalate._
 
 import finder.MetaFinder
 import Utils._
+import system._
 
 /**
  * The Converter object is the main entry point for the commandline
@@ -136,6 +137,13 @@ object Converter {
     }
   }
 
+  def converters(typ: String) {
+      println("Known %s: " format(typ))
+      MetaFinder.tags.filter(_.conversion == typ).foreach { tag =>
+        println("%s:%s %s" format(tag.name, tag.getClass.getPackage.getName, tag.description))
+      }
+  }
+
   def main(args: Array[String]) = {
     // Provide at least an input
     exitCond(args.size < 1)
@@ -145,9 +153,19 @@ object Converter {
 
     // Let the program blow up is they passed in something that doesn't work
     try {
-      validate(config)
       val knowledgeName = config.get("knowledge").getOrElse("blackboard")
       val transformerName = config.get("transformer").getOrElse("moodle")
+
+      if(knowledgeName.equalsIgnoreCase("list")) {
+        converters("Knowledge")
+      }
+
+      if(transformerName.equalsIgnoreCase("list")) {
+        converters("Transformer")
+      }
+
+      // Validate the config
+      validate(config)
 
       val out = config.get("output").getOrElse("./")
 

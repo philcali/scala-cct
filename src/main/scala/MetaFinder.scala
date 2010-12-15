@@ -7,12 +7,24 @@ import knowledge._
 import system._
 
 import java.lang.Class
+import org.clapper.classutil.ClassFinder
+  
 
 /**
  * Finds Knowledges and Transformers for the main
  * converter.
  */
 object MetaFinder {
+  lazy val tags = {
+    val classes = ClassFinder().getClasses.filter(_.name.contains("Tag")).toList
+
+    List("Knowledge", "Transformer").map { typ =>
+      ClassFinder.concreteSubclasses("com.philipcali.cct.system."+typ+"Tag", classes.iterator).map { x => 
+        val clazz = Class.forName(x.name)
+        clazz.newInstance.asInstanceOf[MetaTag]
+      }.toList
+    }.flatten
+  }
   
   def find[A](tpe: String, name: String, pack: String = "com.philipcali.cct") = {
     val className = pack + "." + name + "." + name(0).toUpper + name.drop(1) + tpe

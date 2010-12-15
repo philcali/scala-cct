@@ -10,6 +10,7 @@ import finder._
 trait MetaTag {
   def name: String
   def description: String
+  def conversion: String
 }
 
 /**
@@ -18,6 +19,7 @@ trait MetaTag {
 trait TransformerTag extends MetaTag {
   def suffix: String
   def version: String
+  def conversion = "Transformer"
 
   def description = "%s transforms a course object into a %s %s" format(name, suffix, version)
 }
@@ -27,6 +29,7 @@ trait TransformerTag extends MetaTag {
  */
 trait KnowledgeTag extends MetaTag {
   def version: String
+  def conversion = "Knowledge"
   def description = "%s transforms a %s into a course object." format(name, version)
 }
 

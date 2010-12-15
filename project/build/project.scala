@@ -6,8 +6,11 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
   val scalaterepo = "Scalate Repo" at "http://repo.fusesource.com/nexus/content/repositories/public/org/fusesource/scalate/"
 
   // Grizzled Repo
-  val grizzled = "org.clapper" %% "grizzled-scala" % "1.0"
+  val grizzled = "org.clapper" %% "grizzled-scala" % "1.0.1"
  
+  // Class util
+  val classutil = "org.clapper" %% "classutil" % "0.3.2"
+
   // Scala check
   val scalacheck = "org.scalatest" % "scalatest" % "1.2"
 
