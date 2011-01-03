@@ -26,14 +26,21 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
 
   override def mainClass = Some("com.philipcali.cct.Converter")
 
-  override def packageAction = task { 
-    packageTask(packagePaths, jarPath, packageOptions)
+  lazy val makeExec = task {
     val command = "zip -r %s/program.zip %s %s" format (outputPath, jarPath, managedDependencyPath)
-    Runtime.getRuntime().exec(command)
-    createScript()
-    Runtime.getRuntime().exec("chmod +x %s" format(outputPath / "cct"))
+    try {
+      log.info("Attempting to build program archive")
+      Runtime.getRuntime().exec(command)
+      log.info("Creating shell script")
+      createScript()
+      log.info("Making shell script executable")
+      Runtime.getRuntime().exec("chmod +x %s" format(outputPath / "cct"))
+      log.info("... Done")
+    } catch {
+      case e: Exception => log.error("Could not build program archive. This action relies on 'zip' and 'chmod' executables")
+    }
     None
-  } dependsOn(compile) describedAs("Packages jar, plus creates a cct script for server machines")
+  } dependsOn(`package`) describedAs("Packages executable")
 
   def createScript() {
     val jarSplit = jarPath.toString.split("/")
