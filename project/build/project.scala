@@ -30,7 +30,9 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
     val command = "zip -r %s/program.zip %s %s" format (outputPath, jarPath, managedDependencyPath)
     try {
       log.info("Attempting to build program archive")
-      Runtime.getRuntime().exec(command)
+      withScalaJar { 
+        Runtime.getRuntime().exec(command)
+      }
       log.info("Creating shell script")
       createScript()
       log.info("Making shell script executable")
@@ -42,16 +44,40 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
     None
   } dependsOn(`package`) describedAs("Packages executable")
 
-  def createScript() {
-    val jarSplit = jarPath.toString.split("/")
-    val manSplit = managedDependencyPath.toString.split("/")
+  def withScalaJar(op: => Unit) {
+    val newPath = "%s/compile/scala-library.jar" format(managedDependencyPath)
+    val reader = new java.io.FileInputStream(
+                 mainDependencies.scalaJars.getPaths.find(_.contains("scala-library")).get)
+    val writer = new java.io.FileOutputStream(newPath)
 
-    def prepender(xs: Array[String]) = "cct_program/" + xs.drop(1).mkString("/")
+    // Copy the scala library jar
+    def copy(in: java.io.InputStream, out: java.io.OutputStream): Unit = {
+      val b = new Array[Byte](1024)
+      in.read(b) match {
+        case n if n > -1 => out.write(b, 0, n); copy(in, out)
+        case _ => in.close(); out.close()
+      }
+    }
+    copy(reader, writer)  
+
+    // Perform the operation
+    op
+
+    val newFile = new java.io.File(newPath)
+    newFile.delete
+  }
+
+  def createScript() {
+    def sep(s: Path) = s.toString.split("/")
+    def prepender(xs: Path) = "cct_program/" + sep(xs).drop(1).mkString("/")
+
+    val jarSplit = prepender(jarPath)
+    val manSplit = prepender(managedDependencyPath) 
 
     val writer = new java.io.FileWriter((outputPath / "cct").toString)
     writer.write("#! /bin/sh\n")
     writer.write("unzip -qq program.zip -d cct_program\n")
-    writer.write("scala -classpath %s:%s/compile/* %s \"$@\"\n" format(prepender(jarSplit), prepender(manSplit), mainClass.get))
+    writer.write("java -classpath %s/compile/*:%s %s \"$@\"\n" format(manSplit, jarSplit, mainClass.get))
     writer.write("rm -rf cct_program") 
     writer.close()
   }
