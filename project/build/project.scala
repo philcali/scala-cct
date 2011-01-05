@@ -1,6 +1,6 @@
 import sbt._
 
-class Project(info: ProjectInfo) extends DefaultProject(info) {
+class Project(info: ProjectInfo) extends DefaultProject(info) with ProguardProject {
   // scalate for xml templates
   val scalate = "org.fusesource.scalate" % "scalate-core" % "1.2"
   val scalaterepo = "Scalate Repo" at "http://repo.fusesource.com/nexus/content/repositories/public/org/fusesource/scalate/"
@@ -25,6 +25,27 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
   val ufu = "net.databinder" %% "unfiltered-uploads" % "0.2.0"
 
   override def mainClass = Some("com.philipcali.cct.Converter")
+
+  override def proguardInJars = super.proguardInJars +++ scalaLibraryPath
+  override def proguardOptions = List(
+    proguardKeepMain(mainClass.get),
+    proguardKeepLimitedSerializability,
+    proguardKeepAllScala,
+    """-keep public class * {
+          public protected *;
+       }
+
+       -keepclassmembernames class * {
+          java.lang.Class class$(java.lang.String);
+          java.lang.Class class$(java.lang.String, boolean);
+       }
+
+       -keepclasseswithmembernames class * {
+          native <methods>;
+       }""",
+    "-keep class * { public ** tag(); }",
+    "-keep class * { <init>(***); }"
+  )
 
   lazy val makeExec = task {
     val command = "zip -r %s/program.zip %s %s" format (outputPath, jarPath, managedDependencyPath)
@@ -63,8 +84,10 @@ class Project(info: ProjectInfo) extends DefaultProject(info) {
     // Perform the operation
     op
 
+    /*
     val newFile = new java.io.File(newPath)
     newFile.delete
+    */
   }
 
   def createScript() {
