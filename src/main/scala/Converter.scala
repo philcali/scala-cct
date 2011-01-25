@@ -1,12 +1,12 @@
 package com.philipcali.cct
 
 import unfiltered.jetty.Http
-import unfiltered.filter.Planify
+import unfiltered.filter._
 import unfiltered.request._
 import unfiltered.response._
 import unfiltered.scalate.Scalate
 
-import org.fusesource.scalate._
+//import org.fusesource.scalate._
 
 import finder.MetaFinder
 import Utils._
@@ -183,31 +183,31 @@ object Converter {
         val downloads = new java.io.File(out).toURI
 
         Http(port).resources(downloads.toURL).filter(Planify {
-          case GET(Path("/converter", _)) => {
-            Status(200) ~> 
-            ContentType("text/html") ~> 
-            Scalate("index.ssp", ("knowledge", knowledgeTag), ("transformer", transformerTag))
+          case GET(Path("/converter") & Accepts.Html(r)) => {
+              Status(200) ~> 
+              ContentType("text/html") ~> 
+              Scalate(r, "index.ssp", ("knowledge", knowledgeTag), ("transformer", transformerTag))
           }
-          case POST(Path("/upload", MultiPartParams.Disk(params, files, r))) => 
-          files("archive") match {
-            case fi :: rest => {
-              // Write temp file
-              val tempFile = new java.io.File("./" + fi.name)
-              fi.write(tempFile)
-              // Apply Conversion
-              convert(tempFile.getAbsolutePath, out, knowledgeName, transformerName)
-              // Remove Uploaded file
-              tempFile.delete
-              // Grab newly converted file of same name
-              val newFile = new java.io.File(out).listFiles.find { 
-                f => f.getName.startsWith(tempFile.getName.split("\\.")(0))
-              }.get
-              Status(200) ~>
-              ContentType("text/html") ~>
-              ResponseString("<a href=\"" + newFile.getName + "\">"+ newFile.getName + "</a>")
+          case POST(Path("/upload") & MultiPart(req)) => 
+            MultiPartParams.Disk(req).files("archive")  match {
+              case fi :: rest => {
+                // Write temp file
+                val tempFile = new java.io.File("./" + fi.name)
+                fi.write(tempFile)
+                // Apply Conversion
+                convert(tempFile.getAbsolutePath, out, knowledgeName, transformerName)
+                // Remove Uploaded file
+                tempFile.delete
+                // Grab newly converted file of same name
+                val newFile = new java.io.File(out).listFiles.find { 
+                  f => f.getName.startsWith(tempFile.getName.split("\\.")(0))
+                }.get
+                Status(200) ~>
+                ContentType("text/html") ~>
+                ResponseString("<a href=\"" + newFile.getName + "\">"+ newFile.getName + "</a>")
+              }
+              case Nil => ResponseString("No File")
             }
-            case Nil => ResponseString("No File")
-          }
         }).run
 
       } else if (config.contains("recursive")) {

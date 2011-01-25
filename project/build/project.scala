@@ -19,10 +19,10 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with ProguardProje
   val simple = "org.slf4j" % "slf4j-simple" % "1.6.1"
  
   // Unfiltered Library
-  val ufj = "net.databinder" %% "unfiltered-jetty" % "0.2.0"
-  val uff = "net.databinder" %% "unfiltered-filter" % "0.2.0"
-  val ufs = "net.databinder" %% "unfiltered-scalate" % "0.2.0"
-  val ufu = "net.databinder" %% "unfiltered-uploads" % "0.2.0"
+  val ufj = "net.databinder" %% "unfiltered-jetty" % "0.3.1"
+  val uff = "net.databinder" %% "unfiltered-filter" % "0.3.1"
+  val ufs = "net.databinder" %% "unfiltered-scalate" % "0.3.1"
+  val ufu = "net.databinder" %% "unfiltered-uploads" % "0.3.1"
 
   override def mainClass = Some("com.philipcali.cct.Converter")
 

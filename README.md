@@ -16,7 +16,7 @@ One app, two functions. You can now convert courses on the command-line, convert
 of courses, or launch a web site and takes in an archive and spits out a converted course.
 
 
-I recommend looking at the [options](http://tools.api) for the converter to see how it works.
+I recommend looking at the [options](#options) for the converter to see how it works.
 
 ---
 
@@ -78,3 +78,20 @@ knowledge or transformer test cases, respectively.
 It is my recommendation to any developer working on a new knowledge or
 transformer, to first start with a test case. Once a test case is fully
 implemented, it will work with the main converter.
+
+---
+
+<h1 id="#options">Options</h1>
+
+    cct [--web] [--port=80] [--knowledge=blackboard[:package]] [-r] [--input=path] 
+        [--transformer=moodle[:package]] [--output=directory]
+    
+    Options:
+    -h, --help         | prints out this help
+    -w, --web          | starts a web interface
+    -p, --port         | runs web server on specified port: default 80
+    -k, --knowledge    | uses knowledge from KnowledgeTag
+    -t, --transformer  | uses transformer from TransformerTag
+    -r, --recursive    | uses files in recursive as input (ignored in web mode)
+    -i, --input        | uses this input path (ignored in web mode)
+    -o, --output       | dumps converted to this directory
