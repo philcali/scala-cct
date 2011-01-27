@@ -8,16 +8,25 @@ import Utils._
 import scala.xml._
 import Zip.extract
 
+/**
+ * @author Philip Cali
+ **/
 class BlackboardKnowledgeTag extends KnowledgeTag {
   def name = "blackboard"
   def version = "6.5+"
 }
 
+/**
+ * @author Philip Cali
+ **/
 object BlackboardKnowledge extends Tagger[BlackboardKnowledgeTag] {
   def tag = new BlackboardKnowledgeTag
   def apply(archive: String) = new BlackboardKnowledge(archive)
 }
 
+/**
+ * @author Philip Cali
+ **/
 class BlackboardKnowledge(val archive: String) extends Knowledge with Embed {
   val embedPattern = """@X@EmbeddedFile\.location@X@""".r  
 
@@ -376,4 +385,7 @@ class BlackboardKnowledge(val archive: String) extends Knowledge with Embed {
 }
 
 // Middle conversion; A Resource may be BB specific
+/**
+ * @author Philip Cali
+ **/
 case class Resource(title: String, ident: String, tpe: String)

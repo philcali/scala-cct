@@ -8,6 +8,9 @@ import java.io.File
 import grizzled.util.{withCloseable => withc}
 import scala.io.Source.{fromFile => open}
 
+/**
+ * @author Philip Cali
+ **/
 object MoodleConversions {
   implicit def module2MoodleModule(m: Module) = m match {
     case category: QuestionCategory => new MoodleQuestionCateogry(category)
@@ -22,6 +25,9 @@ object MoodleConversions {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 abstract class MoodleModule(val under: Module) {
   def modType: String
   def toXML: scala.xml.Elem
@@ -43,6 +49,9 @@ abstract class MoodleModule(val under: Module) {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait MoodleResource extends MoodleModule {
   def tpe: String
   def modType = "resource"
@@ -65,6 +74,9 @@ trait MoodleResource extends MoodleModule {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleOnlineText(under: OnlineDocument) extends MoodleModule(under) with MoodleResource with Embed {
   val embedPattern = defaults.r
 
@@ -77,21 +89,33 @@ class MoodleOnlineText(under: OnlineDocument) extends MoodleModule(under) with M
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleSingleFile(under: SingleFile) extends MoodleModule(under) with MoodleResource {
   def tpe = "file"
   override def referfence = dirname + "/" + under.file.linkname
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleDirectory(under: Directory) extends MoodleModule(under) with MoodleResource {
   def tpe = "directory"
   override def referfence = dirname 
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleExternalLink(under: ExternalLink) extends MoodleModule(under) with MoodleResource {
   def tpe = "file"
   override def referfence = under.url
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleStaff(under: StaffInformation) extends MoodleModule(under) with MoodleResource {
   def tpe = "html"
   override def dirname = "staff_information"
@@ -123,6 +147,9 @@ class MoodleStaff(under: StaffInformation) extends MoodleModule(under) with Mood
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleLabel(under: Module) extends MoodleModule(under) {
   def modType = "label"
  
@@ -137,6 +164,9 @@ class MoodleLabel(under: Module) extends MoodleModule(under) {
   } 
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleQuestionCateogry(under: QuestionCategory) extends MoodleModule(under) {
   def modType = "course"
 
@@ -167,6 +197,9 @@ class MoodleQuestionCateogry(under: QuestionCategory) extends MoodleModule(under
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleNumeric(under: Numeric) extends MoodleModule(under) with MoodleQuestion {
   def modType = "numerical"
 
@@ -190,6 +223,9 @@ class MoodleNumeric(under: Numeric) extends MoodleModule(under) with MoodleQuest
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleShortAnswer(under: FillInBlank) extends MoodleModule(under) with MoodleQuestion {
   def modType = "shortanswer"
   
@@ -214,6 +250,9 @@ class MoodleShortAnswer(under: FillInBlank) extends MoodleModule(under) with Moo
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleTrueFalse(under: BooleanQuestion) extends MoodleModule(under) with MoodleQuestion {
   def modType = "truefalse"
   
@@ -239,6 +278,9 @@ class MoodleTrueFalse(under: BooleanQuestion) extends MoodleModule(under) with M
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleEssay(under: Essay) extends MoodleModule(under) with MoodleQuestion {
   def modType = "essay"
   
@@ -259,6 +301,9 @@ class MoodleEssay(under: Essay) extends MoodleModule(under) with MoodleQuestion 
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleMultipleChoice(under: MultipleChoice) extends MoodleModule(under) with MoodleQuestion {
   def modType = "multichoice"
   
@@ -289,6 +334,9 @@ class MoodleMultipleChoice(under: MultipleChoice) extends MoodleModule(under) wi
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleMatchingQuestion(under: Matching) extends MoodleModule(under) with MoodleQuestion {
   def modType = "match"
 
@@ -309,6 +357,9 @@ class MoodleMatchingQuestion(under: Matching) extends MoodleModule(under) with M
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait MoodleQuestion extends MoodleModule {
   
   def baseXML[A](middle: => A) = {
@@ -336,6 +387,9 @@ trait MoodleQuestion extends MoodleModule {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleQuiz(under: Quiz) extends MoodleModule(under) {
   def modType = "quiz"
 

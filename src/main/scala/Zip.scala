@@ -6,6 +6,7 @@ import Utils.readStream
 
 /**
  * Handles all the extraction and archival needs of conversions
+ * @author Philip Cali
  */
 object Zip {
   private def append(dest: String) = if(dest.endsWith("/")) dest else dest + "/"

@@ -6,6 +6,9 @@ import course._
 
 import finder.MetaFinder.{knowledge => know}
 
+/**
+ * @author Philip Cali
+ **/
 class BlackboardKnowledgeSpec extends KnowledgeSpec {
   val archive = getClass.getClassLoader.getResource("ArchiveFile_test_blackboard.zip") 
 

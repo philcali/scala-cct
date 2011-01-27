@@ -6,6 +6,9 @@ import org.scalatest.matchers.ShouldMatchers
 import finder.MetaFinder
 import system._
 
+/**
+ * @author Philip Cali
+ **/
 object TestKnowledge extends Tagger[TestKnowledge]{
   def tag = new TestKnowledge
 }

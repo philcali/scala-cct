@@ -4,7 +4,7 @@ package course
 class Module(val id: Int, val name: String, val from: String)
 trait Resource extends Module
 
-// Online Cou`rse Module
+// Online Course Module
 class Label(id: Int, name: String, from: String) extends Module(id, name, from)
 class ExternalLink(id: Int, name: String, from: String, val url: String) extends Module(id, name, from) with Resource
 class OnlineDocument(id: Int, name: String, from: String, val text: String) extends Module(id, name, from) with Resource

@@ -7,6 +7,9 @@ import Utils._
 import java.io.{File, FileWriter}
 import grizzled.util.{withCloseable => withc}
 
+/**
+ * @author Philip Cali
+ **/
 class CleanerSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   /**
    * Before this spec runs it needs to build a directory tree

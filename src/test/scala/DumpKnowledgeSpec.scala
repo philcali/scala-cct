@@ -4,6 +4,9 @@ package test
 import dump.DumpKnowledge
 import course._
 
+/**
+ * @author Philip Cali
+ **/
 class DumpKnowledgeSpec extends KnowledgeSpec {
   val archive = getClass.getClassLoader.getResource("Archive_dump.zip")
 

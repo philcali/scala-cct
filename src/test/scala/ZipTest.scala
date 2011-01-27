@@ -6,6 +6,9 @@ import org.scalatest.matchers.ShouldMatchers
 import Zip._
 import Utils.remove
 
+/**
+ * @author Philip Cali
+ **/
 class ZipSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   import java.io.File
   val archivePath = getClass.getClassLoader.getResource("archive.zip")

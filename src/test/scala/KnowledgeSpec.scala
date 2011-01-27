@@ -9,6 +9,9 @@ import system._
 import course._
 import Utils.remove
 
+/**
+ * @author Philip Cali
+ **/
 trait KnowledgeSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   val knowledge: Knowledge
 

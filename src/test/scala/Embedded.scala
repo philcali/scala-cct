@@ -5,6 +5,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import system.Embed
 
+/**
+ * @author Philip Cali
+ **/
 class EmbedSpec extends FlatSpec with ShouldMatchers {
   val preformatted = "There should be a %ssomething here and %ssomething here"
  

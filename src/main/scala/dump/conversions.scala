@@ -6,6 +6,9 @@ import course._
 import java.io.{File => JFile}
 import Utils.copy
 
+/**
+ * @author Philip Cali
+ **/
 object DumpConversions {
   implicit def module2DumpModule(m: CourseModule): DumpModule = m.wrapped match {
     case l: Label => new DumpLabel(m, l)
@@ -25,11 +28,17 @@ object DumpConversions {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait XMLOuput {
   def toXML: scala.xml.Node
   def extraXML = <EXTRA/>
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait DumpModule extends XMLOuput {
   import DumpConversions._
 
@@ -60,6 +69,9 @@ trait DumpModule extends XMLOuput {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait FileHandler {
   def fileXML(file: File) = {
     <FILE>
@@ -70,36 +82,60 @@ trait FileHandler {
   }  
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpUnknown(val under: CourseModule, val module: Module) extends DumpModule {
   override def tpe = "unsupported"
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpSection(val under: CourseModule, val module: Section) extends DumpModule 
 
+/**
+ * @author Philip Cali
+ **/
 class DumpLabel(val under: CourseModule,val module: Label) extends DumpModule
 
+/**
+ * @author Philip Cali
+ **/
 class DumpSingleFile(val under: CourseModule,val module: SingleFile) extends DumpModule with FileHandler{
   override def extraXML = fileXML(module.file)
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpDirectory(val under: CourseModule,val module: Directory) extends DumpModule with FileHandler {
   override def extraXML = {
     <FILES>{ module.directory.map(fileXML) }</FILES>
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpOnline(val under: CourseModule, val module: OnlineDocument) extends DumpModule {
   override def extraXML = {
     <TEXT>{ module.text }</TEXT>
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpExternalLink(val under: CourseModule, val module: ExternalLink) extends DumpModule {
   override def extraXML = {
     <LINK>{ module.url }</LINK>
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpStaffInformation(val under: CourseModule, val module: StaffInformation) extends DumpModule{
   override def extraXML = {
     <CONTACT>
@@ -114,6 +150,9 @@ class DumpStaffInformation(val under: CourseModule, val module: StaffInformation
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpQuiz(val under: CourseModule, val module: Quiz) extends DumpModule {
   import DumpConversions.nondisplay2DumpModule  
 
@@ -125,6 +164,9 @@ class DumpQuiz(val under: CourseModule, val module: Quiz) extends DumpModule {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait DumpQuestion extends XMLOuput {
   val question: Question
 
@@ -144,6 +186,9 @@ trait DumpQuestion extends XMLOuput {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpAnswer(val answer: Answer) extends XMLOuput {
   def toXML = {
     <ANSWER>
@@ -155,6 +200,9 @@ class DumpAnswer(val answer: Answer) extends XMLOuput {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpCategory(val module: QuestionCategory) extends DumpModule {
   val under = CourseModule(module, 0, Nil)
 
@@ -177,6 +225,9 @@ class DumpCategory(val module: QuestionCategory) extends DumpModule {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpMultipleChoice(val question: MultipleChoice) extends DumpQuestion {
   override def extraXML = {
     <EXTRA>
@@ -186,7 +237,13 @@ class DumpMultipleChoice(val question: MultipleChoice) extends DumpQuestion {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpMatching(val question: Matching) extends DumpQuestion
+/**
+ * @author Philip Cali
+ **/
 class DumpBooleanQuestion(val question: BooleanQuestion) extends DumpQuestion {
   override def extraXML = {
     <EXTRA>
@@ -195,9 +252,21 @@ class DumpBooleanQuestion(val question: BooleanQuestion) extends DumpQuestion {
     </EXTRA>
   }
 }
+/**
+ * @author Philip Cali
+ **/
 class DumpEssay(val question: Essay) extends DumpQuestion
+/**
+ * @author Philip Cali
+ **/
 class DumpOrdering(val question: Ordering) extends DumpQuestion
+/**
+ * @author Philip Cali
+ **/
 class DumpFillInBlank(val question: FillInBlank) extends DumpQuestion
+/**
+ * @author Philip Cali
+ **/
 class DumpNumeric(val question: Numeric) extends DumpQuestion {
   override def extraXML = {
     <EXTRA>

@@ -6,6 +6,7 @@ import course.Course
 
 /**
  * Entry for all Transformers. 
+ * @author Philip Cali
  */
 trait Transformer {
   val working: String

@@ -10,17 +10,26 @@ import course._
 import java.io.{File => JFile}
 import DumpConversions._
 
+/**
+ * @author Philip Cali
+ **/
 class DumpTransformerTag extends TransformerTag {
   def name = "dump"
   def version = "1.0"
   def suffix = "_dump"
 }
 
+/**
+ * @author Philip Cali
+ **/
 object DumpTransformer extends Tagger[DumpTransformerTag] {
   def tag = new DumpTransformerTag
   def apply(working: String, output: String = "./") = new DumpTransformer(working, output)
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpTransformer(val working: String, val output: String) extends Transformer {
   def staging = {
     val oldDir = new JFile(working)

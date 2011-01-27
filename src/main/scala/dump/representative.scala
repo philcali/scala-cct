@@ -3,23 +3,35 @@ package dump
 
 import course._
 
+/**
+ * @author Philip Cali
+ **/
 case class ModuleData(id: Int,
                       name: String,
                       ref: String,
                       module: scala.xml.Node)
 
+/**
+ * @author Philip Cali
+ **/
 case class QuestionData(id: Int, 
                         name: String, 
                         grade: Double, 
                         text: String, 
                         question: scala.xml.Node)
 
+/**
+ * @author Philip Cali
+ **/
 object ModRep {
   def apply(node: scala.xml.Node) = {
     ((node \ "ID" text).toInt, node \ "NAME" text, node \ "REFERENCE" text)
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait ModuleRep {
   def apply(node: scala.xml.Node) = {
     val (id, name, ref) = ModRep(node)
@@ -29,6 +41,9 @@ trait ModuleRep {
   def build(moduledata: ModuleData): Module
 }
 
+/**
+ * @author Philip Cali
+ **/
 trait FileRep {
   def fileRep(file: scala.xml.Node) = {
     val name = (file \ "NAME").text
@@ -39,22 +54,34 @@ trait FileRep {
 }
 
 // Here starts the higher module type representatives
+/**
+ * @author Philip Cali
+ **/
 object SectionRep extends ModuleRep {
   def build(data: ModuleData) = new Section(data.name)
 }
 
+/**
+ * @author Philip Cali
+ **/
 object LabelRep extends ModuleRep {
   def build(labelData: ModuleData) = {
     new Label(labelData.id, labelData.name, labelData.ref)
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object SingleFileRep extends ModuleRep with FileRep {
   def build(data: ModuleData) = {
     new SingleFile(data.id, data.name, data.ref, fileRep((data.module \ "FILE")(0)))
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object DirectoryRep extends ModuleRep with FileRep {
   def build(data: ModuleData) = {
     val files = for(file <- data.module \\ "FILE") yield(fileRep(file))
@@ -62,18 +89,27 @@ object DirectoryRep extends ModuleRep with FileRep {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object OnlineDocumentRep extends ModuleRep {
   def build(data: ModuleData) = {
     new OnlineDocument(data.id, data.name, data.ref, data.module \ "TEXT" text)
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object ExternalLinkRep extends ModuleRep {
   def build(data: ModuleData) = {
     new ExternalLink(data.id, data.name, data.ref, data.module \ "LINK" text)
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object StaffInformationRep extends ModuleRep {
   def contactRep(contact: scala.xml.Node) = {
     Contact(contact \ "TITLE" text,
@@ -90,6 +126,9 @@ object StaffInformationRep extends ModuleRep {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object QuizRep extends ModuleRep {
   def build(data: ModuleData) = {
     new Quiz(data.id, 
@@ -100,6 +139,9 @@ object QuizRep extends ModuleRep {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object QuestionCategoryRep extends ModuleRep {
   def questions(module: scala.xml.Node) = {
     for(question <- module \\ "QUESTIONS" \ "QUESTION") yield(handleQuestion(question))
@@ -125,6 +167,9 @@ object QuestionCategoryRep extends ModuleRep {
 }
 
 // Here starts the question type representatives
+/**
+ * @author Philip Cali
+ **/
 trait QuestionRep {
   def answerReps(answers: scala.xml.Node) = {
     for(answer <- answers \\ "ANSWER") yield {
@@ -144,6 +189,9 @@ trait QuestionRep {
   def build(questiondata: QuestionData): Question
 }
 
+/**
+ * @author Philip Cali
+ **/
 object MultichoiceRep extends QuestionRep {
   def build(data: QuestionData) = {
     new Question(data.id, data.name, data.text, data.grade) with MultipleChoice {
@@ -155,6 +203,9 @@ object MultichoiceRep extends QuestionRep {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object BooleanQuestionRep extends QuestionRep {
   def build(data: QuestionData) = {
     new Question(data.id, data.name, data.text, data.grade) with BooleanQuestion {
@@ -166,12 +217,18 @@ object BooleanQuestionRep extends QuestionRep {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object EssayRep extends QuestionRep {
   def build(data: QuestionData) = {
     new Question(data.id, data.name, data.text, data.grade) with Essay
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object MatchingRep extends QuestionRep {
   def build(data: QuestionData) = {
     new Question(data.id, data.name, data.text, data.grade) with Matching {
@@ -180,6 +237,9 @@ object MatchingRep extends QuestionRep {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object OrderingRep extends QuestionRep {
   def build(data: QuestionData) = {
     new Question(data.id, data.name, data.text, data.grade) with Ordering {
@@ -188,6 +248,9 @@ object OrderingRep extends QuestionRep {
   }  
 }
 
+/**
+ * @author Philip Cali
+ **/
 object FillInBlankRep extends QuestionRep {
   def build(data: QuestionData) = {
     new Question(data.id, data.name, data.text, data.grade) with FillInBlank {
@@ -196,6 +259,9 @@ object FillInBlankRep extends QuestionRep {
   }
 }
 
+/**
+ * @author Philip Cali
+ **/
 object NumericRep extends QuestionRep {
   def build(data: QuestionData) = {
     new Question(data.id, data.name, data.text, data.grade) with Numeric {

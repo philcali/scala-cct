@@ -1,11 +1,11 @@
 package com.philipcali.cct
-
 package system
 import finder._
 
 
 /**
  * A tag recognized by the MetaFinder
+ * @author Philip Cali
  */
 trait MetaTag {
   def name: String
@@ -15,6 +15,7 @@ trait MetaTag {
 
 /**
  * A Transformer tag recognized by the MetaFinder
+ * @author Philip Cali
  */
 trait TransformerTag extends MetaTag {
   def suffix: String
@@ -26,6 +27,7 @@ trait TransformerTag extends MetaTag {
 
 /**
  * A Knowledge tag recognized by the MetaFinder
+ * @author Philip Cali
  */
 trait KnowledgeTag extends MetaTag {
   def version: String
@@ -35,6 +37,7 @@ trait KnowledgeTag extends MetaTag {
 
 /**
  * Used to find courses with Embedded Location keywords
+ * @author Philip Cali
  */
 trait Embed {
   val embedPattern: scala.util.matching.Regex
@@ -46,6 +49,7 @@ trait Embed {
 
 /**
  * Tag producing objects should inherit this trait
+ * @author Philip Cali
  */
 trait Tagger[A] {
   def tag: A

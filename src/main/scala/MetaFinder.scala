@@ -13,6 +13,7 @@ import org.clapper.classutil.ClassFinder
 /**
  * Finds Knowledges and Transformers for the main
  * converter.
+ * @author Philip Cali
  */
 object MetaFinder {
   lazy val tags = {

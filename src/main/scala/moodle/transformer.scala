@@ -11,18 +11,27 @@ import Utils.remove
 import java.util.Date
 import grizzled.util.{withCloseable => withc}
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleTag extends TransformerTag {
   def name = "moodle"
   def suffix = "_MoodleImport"
   def version = "1.8 < 2.0"
 }
 
+/**
+ * @author Philip Cali
+ **/
 object MoodleTransformer extends Tagger[MoodleTag] {
   def tag = new MoodleTag
   def apply(working: String, output: String= "./") = 
     new MoodleTransformer(working, output)
 }
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleTransformer(val working: String, val output: String) extends Transformer {
   def this(working: String) = this(working, "./")
   

@@ -6,6 +6,9 @@ import java.io.File
 import Zip.extract
 import scala.xml.XML
 
+/**
+ * @author Philip Cali
+ **/
 class DumpTransformerSpec extends TransformerSpec {
   val transformer = DumpTransformer(working, "temp")
 

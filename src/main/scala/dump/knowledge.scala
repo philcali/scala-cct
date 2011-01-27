@@ -6,16 +6,25 @@ import knowledge.Knowledge
 import Zip.extract
 import course._
 
+/**
+ * @author Philip Cali
+ **/
 class DumpKnowledgeTag extends KnowledgeTag {
   def name = "dump"
   def version = "1.0"
 }
 
+/**
+ * @author Philip Cali
+ **/
 object DumpKnowledge extends Tagger[DumpKnowledgeTag] {
   def tag = new DumpKnowledgeTag
   def apply(archive: String) = new DumpKnowledge(archive)
 }
 
+/**
+ * @author Philip Cali
+ **/
 class DumpKnowledge(val archive: String) extends Knowledge {
   val working = "temp/" + archive.split("/").last.split("\\.").head
 

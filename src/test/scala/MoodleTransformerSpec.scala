@@ -8,6 +8,9 @@ import course.Module
 import java.io.File
 import Zip.extract
 
+/**
+ * @author Philip Cali
+ **/
 class MoodleTransformerSpec extends TransformerSpec {
   val transformer = MoodleTransformer(working, "temp")
 

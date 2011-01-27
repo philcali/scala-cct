@@ -6,6 +6,7 @@ import course._
 
 /**
  * A knowledge knows about whatever we're dealing with, and creates a Course object
+ * @author Philip Cali
  */
 trait Knowledge {
 

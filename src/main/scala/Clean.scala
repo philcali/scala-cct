@@ -4,6 +4,7 @@ import grizzled.util.{withCloseable => withc}
 
 /**
  * Contains various folder and file utilities during the conversion process.
+ * @author Philip Cali
  */
 object Utils {
   lazy val offensive = List("'", "\"", "\\.", "!", "\\?", "&", ",", 

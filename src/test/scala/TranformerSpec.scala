@@ -10,6 +10,9 @@ import transformer._
 import course._
 import Utils._
 
+/**
+ * @author Philip Cali
+ **/
 trait TransformerSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   val transformer: Transformer
 

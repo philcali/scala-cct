@@ -6,8 +6,6 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.scalate.Scalate
 
-//import org.fusesource.scalate._
-
 import finder.MetaFinder
 import Utils._
 import system._
