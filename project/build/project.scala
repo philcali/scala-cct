@@ -22,32 +22,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sbt._
 
-class Project(info: ProjectInfo) extends DefaultProject(info) with ProguardProject {
+// TODO: Maybe look at conscript harnessing this
+class Project(info: ProjectInfo) extends DefaultProject(info) 
+                                 with assembly.AssemblyBuilder{ 
   // scalate for xml templates
+  val scalaterepo = "Scalate Repo" at "http://repo.fusesource.com/nexus/content/repositories/public/"
   val scalate = "org.fusesource.scalate" % "scalate-core" % "1.2"
-  val scalaterepo = "Scalate Repo" at "http://repo.fusesource.com/nexus/content/repositories/public/org/fusesource/scalate/"
 
   // Grizzled Repo
-  val grizzled = "org.clapper" %% "grizzled-scala" % "1.0.1"
+  val grizzled = "org.clapper" %% "grizzled-scala" % "1.0.3"
  
   // Class util
   val classutil = "org.clapper" %% "classutil" % "0.3.2"
 
-  // Scala check
-  val scalacheck = "org.scalatest" % "scalatest" % "1.2"
+  // Scala test 
+  val scalatest = "org.scalatest" % "scalatest" % "1.3" % "test"
 
   // Logging framework
+  /*
   val sl4j = "org.slf4j" % "slf4j-api" % "1.6.1"
   val simple = "org.slf4j" % "slf4j-simple" % "1.6.1"
- 
+  */ 
+
   // Unfiltered Library
   val ufj = "net.databinder" %% "unfiltered-jetty" % "0.3.1"
   val uff = "net.databinder" %% "unfiltered-filter" % "0.3.1"
-  val ufs = "net.databinder" %% "unfiltered-scalate" % "0.3.1"
+  // Unfortunately, the scalate requires 2.8.0
+  val ufs = "net.databinder" % "unfiltered-scalate_2.8.0" % "0.3.1"
   val ufu = "net.databinder" %% "unfiltered-uploads" % "0.3.1"
 
   override def mainClass = Some("com.philipcali.cct.Converter")
 
+  /*
   override def proguardInJars = super.proguardInJars +++ scalaLibraryPath
   override def proguardOptions = List(
     proguardKeepMain(mainClass.get),
@@ -68,6 +74,7 @@ class Project(info: ProjectInfo) extends DefaultProject(info) with ProguardProje
     "-keep class * { public ** tag(); }",
     "-keep class * { <init>(***); }"
   )
+  */
 
   lazy val makeExec = task {
     val command = "zip -r %s/program.zip %s %s" format (outputPath, jarPath, managedDependencyPath)
