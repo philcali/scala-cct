@@ -24,7 +24,7 @@ import sbt._
 
 // TODO: Maybe look at conscript harnessing this
 class Project(info: ProjectInfo) extends DefaultProject(info) 
-                                 with assembly.AssemblyBuilder{ 
+                                 with assembly.AssemblyBuilder { 
   // scalate for xml templates
   val scalaterepo = "Scalate Repo" at "http://repo.fusesource.com/nexus/content/repositories/public/"
   val scalate = "org.fusesource.scalate" % "scalate-core" % "1.2"
