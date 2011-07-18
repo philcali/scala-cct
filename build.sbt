@@ -13,6 +13,8 @@ mainClass in (Compile, run) := Some("com.github.philcali.cct.Converter")
 resolvers += "Scalate Repo" at 
              "http://repo.fusesource.com/nexus/content/repositories/public/"
 
+parallelExecution in Test := false
+
 libraryDependencies ++= Seq( 
   "net.databinder" %% "unfiltered-jetty" % "0.4.0",
   "net.databinder" %% "unfiltered-uploads" % "0.4.0",
