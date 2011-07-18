@@ -8,8 +8,17 @@ Scala (the xml parsing and what not). I found Scala to be a perfect fit for this
 
 The tool is now complete with a test suite and an extension API (which I will go into later).
 
-*Note*: Development on this project has pretty much stopped. People can do whatever they want with
-it. 
+*Note*: Development on this project has pretty much stopped for now (though I've taken the opportunity to upgrade
+build software). People can do whatever they want with it. 
+
+## The Ideas
+
+Some ideas if I ever get back into the swing of things:
+
+ * Split up the project into library and conscript projects
+ * Add more conversion pieces
+ * Provide a better extension API (I had some ideas on this)
+ * Make the default conversion page prettier ... It's pretty horrible as is.
 
 ---
 
