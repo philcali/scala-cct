@@ -20,7 +20,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-package com.philipcali.cct
+package com.github.philcali.cct
 
 import unfiltered.jetty.Http
 import unfiltered.filter._
@@ -146,7 +146,7 @@ object Converter {
         val s = name.split(":")
         (s(0), s(1))
       } 
-      else (name, "com.philipcali.cct")
+      else (name, "com.github.philcali.cct")
     }
   }
 
