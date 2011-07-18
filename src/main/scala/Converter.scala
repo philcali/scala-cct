@@ -26,7 +26,6 @@ import unfiltered.jetty.Http
 import unfiltered.filter._
 import unfiltered.request._
 import unfiltered.response._
-import unfiltered.scalate.Scalate
 
 import finder.MetaFinder
 import Utils._
@@ -153,7 +152,7 @@ object Converter {
   def exitCond(cond: => Boolean) = {
     if(cond) {
       help
-      exit(0)
+      sys.exit(0)
     }
   }
 
@@ -162,6 +161,21 @@ object Converter {
       MetaFinder.tags.filter(_.conversion == typ).foreach { tag =>
         println("%s:%s %s" format(tag.name, tag.getClass.getPackage.getName, tag.description))
       }
+  }
+
+  def pullTemplate = {
+    val stream = this.getClass.getClassLoader.getResourceAsStream("index.ssp")
+    val byteOut = new java.io.ByteArrayOutputStream(1024)
+    def read(in: java.io.InputStream, out: java.io.OutputStream) { 
+      val buf = new Array[Byte](1024)
+      in.read(buf) match {
+        case n if n > 0 => out.write(buf); read(in, out)
+        case _ => in.close
+      } 
+    }
+
+    read(stream, byteOut)
+    byteOut.toString
   }
 
   def main(args: Array[String]) = {
@@ -202,11 +216,24 @@ object Converter {
         val port = config.get("port").getOrElse("80").toInt
         val downloads = new java.io.File(out).toURI
 
+        val reg = """\#\{\s*(\w+)\s*\}\#""".r
+        val data = Map(
+          "knowledgeName" -> knowledgeTag.name,
+          "transformerName" -> transformerTag.name,
+          "knowledgeVersion" -> knowledgeTag.version,
+          "transformerVersion" -> transformerTag.version
+        )
+
         Http(port).resources(downloads.toURL).filter(Planify {
-          case GET(Path("/converter") & Accepts.Html(r)) => {
-              Status(200) ~> 
-              ContentType("text/html") ~> 
-              Scalate(r, "index.ssp", ("knowledge", knowledgeTag), ("transformer", transformerTag))
+          case GET(Path("/converter")) => {
+            val template = pullTemplate 
+            val response = reg.findAllIn(template).foldLeft(template) { (in, mat) =>
+              val reg(key) = mat
+              reg.replaceFirstIn(in, data.getOrElse(key, ""))
+            }
+            Status(200) ~>
+            ContentType("text/html") ~>
+            ResponseString(response)
           }
           case POST(Path("/upload") & MultiPart(req)) => 
             MultiPartParams.Disk(req).files("archive")  match {

@@ -1,9 +1,4 @@
-#import(com.philipcali.cct.system._)
-<%@ import val knowledge: KnowledgeTag %>
-<%@ import val transformer: TransformerTag %>
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <!-- Author: Philip Cali -->
 
@@ -15,40 +10,52 @@
     <style type="text/css">
       body {
         font-family: "Verdana", sans-serif;
-        background-color: #B5AFA3;
+        font-size: 13px;
       }
       .page {
         width: 70%;
         margin: auto;
-        border: 1px solid #000;
+      }
+      .wrap {
+        border-radius: 15px;
+        box-shadow: 10px 10px 5px #888;
+        border: 1px solid #888;
       }
       .header {
         background-color: #461d7c;
         color: #eee;
         border-bottom: 1px dotted #666;
         padding: 10px;
+        border-top-left-radius: 15px 15px;
+        border-top-right-radius: 15px 15px;
       }
       .header h1 {
         margin: 0 0;
+        font-size: 20px;
+        font-weight: italic;
       }
       .content {
         background-color: #FCECAE;
         padding: 10px;
+        border-bottom-left-radius: 15px 15px;
+        border-bottom-right-radius: 15px 15px;
       }  
     </style>
   </head>
   <body>
     <div class = "page">
-      <div class = "header">
-        <h1>${knowledge.name} ${knowledge.version} to ${transformer.name} ${transformer.version}</h1>
-      </div>
-      <div class = "content">
-        <form id="form" method="POST" enctype="multipart/form-data" action="/upload">
-          <span>${knowledge.name} archive:</span>
-          <input type="file" name="archive"/><br/>
-          <input type="submit" name="Go"/>
-        </form>
-        <div class="dynamic"><div/>
+      <div class = "wrap">
+        <div class = "header">
+          <h1>#{knowledgeName}# #{knowledgeVersion}# to #{transformerName}# #{transformerVersion}#</h1>
+        </div>
+        <div class = "content">
+          <form id="form" method="POST" enctype="multipart/form-data" action="/upload">
+            <span>#{ knowledgeName }# archive:</span>
+            <input type="file" name="archive"/><br/>
+            <input type="submit" value="Go"/>
+          </form>
+          <div class="dynamic"><div/>
+        </div>
       </div>
     </div>
     
